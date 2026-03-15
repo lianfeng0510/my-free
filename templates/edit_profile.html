@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        .profile-edit-card {
+            background-color: var(--card-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            max-width: 760px;
+            margin: 0 auto;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .profile-edit-section {
+            margin-bottom: 16px;
+        }
+        .profile-edit-avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 8px;
+        }
+        .profile-edit-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+        }
+        .profile-edit-help {
+            font-size: 12px;
+            color: var(--secondary-color);
+            margin-top: 4px;
+        }
+        .profile-edit-title {
+            margin-bottom: 16px;
+        }
+        .profile-edit-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 480px) {
+            .profile-edit-card {
+                padding: 14px;
+                border-radius: 14px;
+            }
+            .profile-edit-avatar-row {
+                gap: 10px;
+            }
+            .profile-edit-avatar {
+                width: 62px;
+                height: 62px;
+            }
+            .profile-edit-actions .btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+        .profile-file-input {
+            font-size: 13px;
+            color: var(--text-color);
+        }
+    </style>
+    <div class="profile-edit-card">
+    <h2 class="profile-edit-title">编辑个人资料</h2>
+    <form method="POST" enctype="multipart/form-data" id="profile-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="profile-edit-section">
+            <label for="avatar" class="ui-form-label">上传头像</label>
+            <div class="profile-edit-avatar-row">
+                <div class="profile-edit-avatar">
+                    <img id="avatar-preview" src="{{ resolve_avatar_url(current_user) }}" alt="avatar" class="ui-avatar-cover">
+                </div>
+                <input type="file" id="avatar" name="avatar" accept="image/*" class="profile-file-input">
+            </div>
+            <p class="profile-edit-help">支持格式为 png, jpg, jpeg, gif</p>
+        </div>
+        
+        <div class="profile-edit-section">
+            <label for="bio" class="ui-form-label">个人简介</label>
+            <textarea id="bio" name="bio" rows="4" class="ui-textarea-surface">{{ current_user.bio or '' }}</textarea>
+        </div>
+        
+        <div class="profile-edit-actions">
+            <button type="submit" class="btn btn-success">保存更改</button>
+            <a href="{{ url_for('profile') }}" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarInput = document.getElementById('avatar');
+            const preview = document.getElementById('avatar-preview');
+            if (avatarInput && preview) {
+                avatarInput.addEventListener('change', function() {
+                    const file = this.files && this.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        preview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        });
+    </script>
+{% endblock %}

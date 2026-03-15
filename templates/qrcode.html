@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">📱</span>
+                推广二维码
+            </h3>
+        </div>
+        
+        <div style="text-align: center; padding: 48px 24px;">
+            <div style="width: 200px; height: 200px; background-color: #f0f0f0; border-radius: 12px; margin: 0 auto 24px auto; display: flex; align-items: center; justify-content: center; font-size: 48px;">
+                📱
+            </div>
+            <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">推广二维码</h4>
+            <p style="margin: 0 0 24px 0; font-size: 14px; color: var(--secondary-color);">扫描二维码，邀请好友加入校园贴吧</p>
+            <div style="display: flex; justify-content: center; gap: 16px;">
+                <button class="btn btn-primary" style="font-size: 14px; padding: 10px 20px;">
+                    刷新二维码
+                </button>
+                <button class="btn btn-secondary" style="font-size: 14px; padding: 10px 20px;">
+                    下载二维码
+                </button>
+            </div>
+        </div>
+        
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">推广说明</h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--secondary-color); line-height: 1.6;">
+                <li style="margin-bottom: 8px;">每邀请1位好友注册，可获得5积分奖励</li>
+                <li style="margin-bottom: 8px;">好友发布首帖后，可额外获得10积分奖励</li>
+                <li style="margin-bottom: 8px;">邀请好友数量无上限，多邀多得</li>
+                <li style="margin-bottom: 8px;">积分可用于兑换校园周边礼品</li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}

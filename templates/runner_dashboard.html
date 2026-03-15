@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h2 style="margin: 0;">🚶 跑腿员中心</h2>
+            <p style="font-size: 14px; color: var(--secondary-color); margin: 4px 0 0 0;">欢迎回来，{{ current_user.username }}！</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="{{ url_for('runner_orders', status='pending') }}" class="btn btn-accent">查看订单</a>
+            <a href="{{ url_for('runner_orders', status='my_runs') }}" class="btn btn-secondary">我的接单</a>
+        </div>
+    </div>
+    {% if not can_accept_orders %}
+    <div style="margin-top: 12px; padding: 10px 12px; border-radius: 10px; background-color: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.25); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="font-size: 13px; color: var(--text-color);">普通用户无法接单，请先完成管理员认证。</span>
+        <form method="POST" action="{{ url_for('become_runner') }}" style="margin: 0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;">申请成为跑腿员</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 统计卡片 -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-md); color: white;">
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">总接单</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ total_orders }}</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-md); color: white;">
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">已完成</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ completed_orders }}</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-md); color: white;">
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">今日接单</div>
+        <div style="font-size: 28px; font-weight: 700;">{{ today_orders }}</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-md); color: white;">
+        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 4px;">累计小费</div>
+        <div style="font-size: 28px; font-weight: 700;">¥{{ total_tips }}</div>
+    </div>
+</div>
+
+<!-- 快速操作 -->
+<div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">快速操作</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+        <a href="{{ url_for('runner_orders', status='pending') }}" style="display: flex; flex-direction: column; align-items: center; padding: 16px; border-radius: 8px; background-color: rgba(0,0,0,0.02); text-decoration: none; color: var(--text-color); transition: all 0.3s ease;">
+            <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
+            <span style="font-size: 14px; font-weight: 500;">待接单</span>
+            {% if pending_orders|length > 0 %}
+            <span style="margin-top: 4px; background-color: var(--accent-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">{{ pending_orders|length }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('runner_orders', status='accepted') }}" style="display: flex; flex-direction: column; align-items: center; padding: 16px; border-radius: 8px; background-color: rgba(0,0,0,0.02); text-decoration: none; color: var(--text-color); transition: all 0.3s ease;">
+            <div style="font-size: 32px; margin-bottom: 8px;">✅</div>
+            <span style="font-size: 14px; font-weight: 500;">已接单</span>
+            {% if pending_orders|length > 0 %}
+            <span style="margin-top: 4px; background-color: #0c5460; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">{{ pending_orders|length }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('runner_orders', status='in_progress') }}" style="display: flex; flex-direction: column; align-items: center; padding: 16px; border-radius: 8px; background-color: rgba(0,0,0,0.02); text-decoration: none; color: var(--text-color); transition: all 0.3s ease;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🚚</div>
+            <span style="font-size: 14px; font-weight: 500;">配送中</span>
+            {% if in_progress_orders|length > 0 %}
+            <span style="margin-top: 4px; background-color: #004085; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">{{ in_progress_orders|length }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('runner_orders', status='completed') }}" style="display: flex; flex-direction: column; align-items: center; padding: 16px; border-radius: 8px; background-color: rgba(0,0,0,0.02); text-decoration: none; color: var(--text-color); transition: all 0.3s ease;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
+            <span style="font-size: 14px; font-weight: 500;">已完成</span>
+        </a>
+    </div>
+</div>
+
+<!-- 最近接单列表 -->
+<div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+    <!-- 可接订单 -->
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin: 0;">可接订单</h3>
+            <a href="{{ url_for('runner_orders', status='pending') }}" style="font-size: 12px; color: var(--accent-color); text-decoration: none;">查看更多 →</a>
+        </div>
+        {% if available_orders %}
+            <div class="space-y-3">
+                {% for order in available_orders %}
+                <div style="padding: 12px; border-radius: 8px; background-color: rgba(0,0,0,0.02);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div>
+                            <h4 style="font-size: 14px; font-weight: 600; margin: 0;">{{ order.title }}</h4>
+                            <span style="font-size: 12px; color: var(--secondary-color);">{{ order.service_type }}</span>
+                        </div>
+                        {% if order.tip > 0 %}
+                        <span style="font-size: 14px; font-weight: 600; color: var(--accent-color);">¥{{ order.tip }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 8px;">
+                        <span>📍 {{ order.pick_up_location }}</span> → <span>🏠 {{ order.delivery_location }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: var(--secondary-color);">{{ order.created_at.strftime('%H:%M') }}</span>
+                        <a href="{{ url_for('runner_order_detail', order_id=order.id) }}" style="font-size: 12px; padding: 4px 12px; background-color: var(--accent-color); color: white; border-radius: 4px; text-decoration: none;">查看详情</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 24px; color: var(--secondary-color);">
+                <p>暂无可接订单</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 我的最近接单 -->
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin: 0;">我的最近接单</h3>
+            <a href="{{ url_for('runner_orders', status='my_runs') }}" style="font-size: 12px; color: var(--accent-color); text-decoration: none;">查看更多 →</a>
+        </div>
+        {% if recent_orders %}
+            <div class="space-y-3">
+                {% for order in recent_orders %}
+                <div style="padding: 12px; border-radius: 8px; background-color: rgba(0,0,0,0.02);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div>
+                            <h4 style="font-size: 14px; font-weight: 600; margin: 0;">{{ order.title }}</h4>
+                            <span style="font-size: 12px; color: var(--secondary-color);">{{ order.service_type }}</span>
+                        </div>
+                        <span style="
+                            padding: 2px 8px;
+                            border-radius: 10px;
+                            font-size: 11px;
+                            font-weight: 500;
+                            {% if order.status == 'pending' %}
+                                background-color: #fff3cd;
+                                color: #856404;
+                            {% elif order.status == 'accepted' %}
+                                background-color: #d1ecf1;
+                                color: #0c5460;
+                            {% elif order.status == 'in_progress' %}
+                                background-color: #cce5ff;
+                                color: #004085;
+                            {% elif order.status == 'completed' %}
+                                background-color: #d4edda;
+                                color: #155724;
+                            {% elif order.status == 'cancelled' %}
+                                background-color: #f8d7da;
+                                color: #721c24;
+                            {% endif %}
+                        ">
+                            {% if order.status == 'pending' %}待接单{% elif order.status == 'accepted' %}已接单{% elif order.status == 'in_progress' %}配送中{% elif order.status == 'completed' %}已完成{% elif order.status == 'cancelled' %}已取消{% endif %}
+                        </span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 8px;">
+                        <span>📍 {{ order.pick_up_location }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: var(--secondary-color);">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        <a href="{{ url_for('runner_order_detail', order_id=order.id) }}" style="font-size: 12px; padding: 4px 12px; background-color: var(--accent-color); color: white; border-radius: 4px; text-decoration: none;">查看详情</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 24px; color: var(--secondary-color);">
+                <p>暂无接单记录</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

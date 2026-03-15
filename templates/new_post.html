@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .new-post-container {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+    .post-form-card {
+        background-color: var(--card-color);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 16px;
+    }
+    .post-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .second-hand-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .circle-search-row {
+        display: flex;
+        gap: 8px;
+    }
+    
+    @media (max-width: 768px) {
+        .new-post-container {
+            padding: 12px;
+        }
+        .post-form-card {
+            padding: 16px;
+        }
+        .post-info-grid {
+            grid-template-columns: 1fr; /* Stack vertically on mobile */
+        }
+        .second-hand-grid {
+            grid-template-columns: repeat(2, 1fr); /* 2 cols on mobile */
+        }
+        .circle-search-row {
+            flex-direction: column;
+        }
+        .circle-search-row button {
+            width: 100%;
+        }
+        input, select, textarea {
+            font-size: 16px !important; /* Prevent zoom */
+        }
+    }
+</style>
+
+<div class="new-post-container">
+    <div class="post-form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+            <h2 style="margin: 0; font-size: 22px; font-weight: 700;">{{ '编辑帖子' if edit_mode else '发布帖子' }}</h2>
+            <span id="draft-tip" style="font-size: 12px; color: var(--secondary-color);">草稿会自动保存到本地</span>
+        </div>
+        <p style="margin: 0; color: var(--secondary-color); font-size: 14px;">先写标题和正文，再传图，再输入圈子名称快速发布。</p>
+    </div>
+
+    {% set chosen_type = form_data.post_type if form_data.post_type else post_type %}
+    <form id="post-form" method="POST" enctype="multipart/form-data" class="post-form-card">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="margin-bottom: 14px;">
+            <label for="title" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">标题</label>
+            <input id="title" name="title" type="text" required maxlength="100" value="{{ form_data.title or '' }}" placeholder="例如：9成新自行车转让，支持当面试骑" style="width: 100%; padding: 11px; border-radius: 10px; border: 1px solid var(--border-color);">
+            <div style="margin-top: 4px; font-size: 12px; color: var(--secondary-color);"><span id="title-count">{{ (form_data.title or '')|length }}</span>/100</div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+            <label for="content" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">正文</label>
+            <textarea id="content" name="content" required rows="9" maxlength="5000" placeholder="写清楚背景、需求、时间和注意事项，内容越具体，回复越高质量。" style="width: 100%; padding: 11px; border-radius: 10px; border: 1px solid var(--border-color); resize: vertical;">{{ form_data.content or '' }}</textarea>
+            <div style="margin-top: 4px; font-size: 12px; color: var(--secondary-color);"><span id="content-count">{{ (form_data.content or '')|length }}</span>/5000</div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label for="images" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">图片（可选）</label>
+            <input id="images" name="images" type="file" multiple accept="image/*" style="width: 100%; padding: 8px; border-radius: 10px; border: 1px solid var(--border-color);">
+            <div id="file-hint" style="margin-top: 4px; font-size: 12px; color: var(--secondary-color);">最多建议 9 张，支持 png/jpg/jpeg/gif</div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+            <label for="circle_search" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">圈子（输入后点击确认）</label>
+            <div class="circle-search-row">
+                <input id="circle_search" name="circle_search" type="text" list="circle-list" value="{{ form_data.circle_search or '' }}" placeholder="输入圈子名称" style="flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <button id="confirm-circle-btn" type="button" class="btn btn-secondary" style="padding: 10px 14px;">确认圈子</button>
+            </div>
+            <datalist id="circle-list">
+                {% for circle in circles %}
+                <option value="{{ circle.name }}" data-id="{{ circle.id }}"></option>
+                {% endfor %}
+            </datalist>
+            <input id="circle_id" name="circle_id" type="hidden" value="{{ form_data.circle_id or '' }}">
+            <div id="circle-confirm-tip" style="margin-top: 4px; font-size: 12px; color: var(--secondary-color);">可不选圈子；确认后会在圈内同步展示。</div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+            <label for="post_type" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">帖子类型</label>
+            <select id="post_type" name="post_type" required style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <option value="normal" {% if chosen_type == 'normal' %}selected{% endif %}>普通交流</option>
+                <option value="second_hand" {% if chosen_type == 'second_hand' %}selected{% endif %}>二手交易</option>
+                <option value="runner" {% if chosen_type == 'runner' %}selected{% endif %}>跑腿服务</option>
+                <option value="food" {% if chosen_type == 'food' %}selected{% endif %}>外卖分享</option>
+                <option value="lost_found" {% if chosen_type == 'lost_found' %}selected{% endif %}>失物招领</option>
+                <option value="part_time" {% if chosen_type == 'part_time' %}selected{% endif %}>兼职招聘</option>
+                <option value="course" {% if chosen_type == 'course' %}selected{% endif %}>课程资料</option>
+                <option value="activity" {% if chosen_type == 'activity' %}selected{% endif %}>社团活动</option>
+                <option value="notification" {% if chosen_type == 'notification' %}selected{% endif %}>校园通知</option>
+            </select>
+        </div>
+
+        <div class="post-info-grid">
+            <div>
+                <label for="price" id="price-label" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">价格</label>
+                <input id="price" name="price" type="number" step="0.01" min="0" value="{{ form_data.price or '' }}" placeholder="可选" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
+            </div>
+            <div>
+                <label for="location" id="location-label" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">地点</label>
+                <input id="location" name="location" type="text" maxlength="200" value="{{ form_data.location or '' }}" placeholder="可选" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
+            </div>
+            <div>
+                <label for="contact_info" id="contact-label" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">联系方式</label>
+                <input id="contact_info" name="contact_info" type="text" maxlength="200" value="{{ form_data.contact_info or '' }}" placeholder="可选" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
+            </div>
+        </div>
+
+        <div id="second-hand-extra" style="display: none; margin-bottom: 14px; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">二手交易信息</div>
+            <div class="second-hand-grid">
+                <div>
+                    <label style="display: block; font-size: 12px; margin-bottom: 4px;">分类</label>
+                    <select name="second_hand_category" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <option value="books" {% if form_data.second_hand_category == 'books' %}selected{% endif %}>教材</option>
+                        <option value="electronics" {% if form_data.second_hand_category == 'electronics' %}selected{% endif %}>数码</option>
+                        <option value="daily" {% if form_data.second_hand_category == 'daily' %}selected{% endif %}>生活用品</option>
+                        <option value="clothes" {% if form_data.second_hand_category == 'clothes' %}selected{% endif %}>服饰</option>
+                        <option value="other" {% if form_data.second_hand_category == 'other' or not form_data.second_hand_category %}selected{% endif %}>其他</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; margin-bottom: 4px;">成色</label>
+                    <input name="second_hand_condition" type="text" maxlength="20" value="{{ form_data.second_hand_condition or '' }}" placeholder="如：9成新" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color);">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; margin-bottom: 4px;">交易方式</label>
+                    <select name="second_hand_trade_method" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <option value="face" {% if form_data.second_hand_trade_method == 'face' or not form_data.second_hand_trade_method %}selected{% endif %}>面交</option>
+                        <option value="delivery" {% if form_data.second_hand_trade_method == 'delivery' %}selected{% endif %}>送货</option>
+                        <option value="both" {% if form_data.second_hand_trade_method == 'both' %}selected{% endif %}>面交/送货</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: end;">
+                    <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; margin: 0 0 4px 0;">
+                        <input type="checkbox" name="second_hand_escrow" {% if form_data.second_hand_escrow %}checked{% endif %}>
+                        开启担保交易
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                <input type="checkbox" name="is_anonymous" {% if form_data.is_anonymous %}checked{% endif %}>
+                匿名发布
+            </label>
+            <div style="display: flex; gap: 8px;">
+                <button id="submit-btn" type="submit" class="btn btn-accent">{{ '保存修改' if edit_mode else '立即发布' }}</button>
+                <a href="{{ url_for('post', post_id=post_to_edit.id) if edit_mode else url_for('home') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('post-form');
+    const typeInput = document.getElementById('post_type');
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('content');
+    const titleCount = document.getElementById('title-count');
+    const contentCount = document.getElementById('content-count');
+    const priceLabel = document.getElementById('price-label');
+    const locationLabel = document.getElementById('location-label');
+    const contactLabel = document.getElementById('contact-label');
+    const priceInput = document.getElementById('price');
+    const locationInput = document.getElementById('location');
+    const contactInput = document.getElementById('contact_info');
+    const fileInput = document.getElementById('images');
+    const fileHint = document.getElementById('file-hint');
+    const submitBtn = document.getElementById('submit-btn');
+    const draftTip = document.getElementById('draft-tip');
+    const secondHandExtra = document.getElementById('second-hand-extra');
+    const circleSearchInput = document.getElementById('circle_search');
+    const circleIdInput = document.getElementById('circle_id');
+    const circleConfirmTip = document.getElementById('circle-confirm-tip');
+    const confirmCircleBtn = document.getElementById('confirm-circle-btn');
+    const draftKey = 'post-draft-' + ({{ 'true' if edit_mode else 'false' }} ? 'edit' : 'new');
+
+    function updateCounters() {
+        titleCount.textContent = titleInput.value.length;
+        contentCount.textContent = contentInput.value.length;
+    }
+
+    function updateTypeLabels() {
+        const type = typeInput.value;
+        const map = {
+            normal: ['价格', '地点', '联系方式'],
+            second_hand: ['转让价格', '交易地点', '联系微信/电话'],
+            runner: ['小费金额', '取送地点', '联系方式'],
+            food: ['人均价格', '推荐地点', '联系方式'],
+            lost_found: ['酬谢金额', '丢失/拾获地点', '联系方式'],
+            part_time: ['薪资', '工作地点', '联系方式'],
+            course: ['资料价格', '课程/教室', '联系方式'],
+            activity: ['费用', '活动地点', '联系方式'],
+            notification: ['金额', '发布地点', '发布单位']
+        };
+        const labels = map[type] || map.normal;
+        priceLabel.textContent = labels[0];
+        locationLabel.textContent = labels[1];
+        contactLabel.textContent = labels[2];
+        const needPrice = ['second_hand', 'runner', 'part_time'].includes(type);
+        priceInput.required = needPrice;
+        secondHandExtra.style.display = type === 'second_hand' ? 'block' : 'none';
+    }
+
+    function saveDraft() {
+        if ({{ 'true' if edit_mode else 'false' }}) return;
+        const data = {
+            circle_id: form.circle_id.value,
+            circle_search: form.circle_search.value,
+            post_type: form.post_type.value,
+            title: form.title.value,
+            content: form.content.value,
+            price: form.price.value,
+            location: form.location.value,
+            contact_info: form.contact_info.value,
+            second_hand_category: form.second_hand_category ? form.second_hand_category.value : '',
+            second_hand_condition: form.second_hand_condition ? form.second_hand_condition.value : '',
+            second_hand_trade_method: form.second_hand_trade_method ? form.second_hand_trade_method.value : '',
+            second_hand_escrow: form.second_hand_escrow && form.second_hand_escrow.checked ? 'on' : '',
+            is_anonymous: form.is_anonymous.checked ? 'on' : ''
+        };
+        localStorage.setItem(draftKey, JSON.stringify(data));
+        draftTip.textContent = '草稿已自动保存';
+    }
+
+    function loadDraft() {
+        if ({{ 'true' if edit_mode else 'false' }}) return;
+        const raw = localStorage.getItem(draftKey);
+        if (!raw) return;
+        try {
+            const data = JSON.parse(raw);
+            if (!form.title.value && !form.content.value) {
+                Object.keys(data).forEach(function(k) {
+                    if (form[k] && k !== 'is_anonymous' && k !== 'second_hand_escrow') form[k].value = data[k];
+                });
+                form.is_anonymous.checked = data.is_anonymous === 'on';
+                if (form.second_hand_escrow) form.second_hand_escrow.checked = data.second_hand_escrow === 'on';
+                draftTip.textContent = '已恢复上次未发布草稿';
+            }
+        } catch (e) {
+            localStorage.removeItem(draftKey);
+        }
+    }
+
+    function confirmCircle() {
+        const val = circleSearchInput.value.trim();
+        const match = Array.from(document.querySelectorAll('#circle-list option')).find(function(item) {
+            return item.value === val;
+        });
+        if (match) {
+            circleIdInput.value = match.getAttribute('data-id') || '';
+            circleConfirmTip.textContent = '圈子已确认：' + val;
+        } else {
+            circleIdInput.value = '';
+            circleConfirmTip.textContent = val ? '未识别到圈子，可继续输入完整名称' : '可不选圈子；确认后会在圈内同步展示。';
+        }
+        saveDraft();
+    }
+
+    typeInput.addEventListener('change', function() {
+        updateTypeLabels();
+        saveDraft();
+    });
+
+    [titleInput, contentInput, priceInput, locationInput, contactInput].forEach(function(el) {
+        el.addEventListener('input', function() {
+            updateCounters();
+            saveDraft();
+        });
+    });
+    circleSearchInput.addEventListener('change', confirmCircle);
+    confirmCircleBtn.addEventListener('click', confirmCircle);
+    form.is_anonymous.addEventListener('change', saveDraft);
+
+    fileInput.addEventListener('change', function() {
+        const count = fileInput.files ? fileInput.files.length : 0;
+        fileHint.textContent = count > 0 ? ('已选择 ' + count + ' 张图片') : '最多建议 9 张，支持 png/jpg/jpeg/gif';
+    });
+
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.textContent = {{ "'保存中...'" if edit_mode else "'发布中...'" }};
+        if (!{{ 'true' if edit_mode else 'false' }}) {
+            localStorage.removeItem(draftKey);
+        }
+    });
+
+    loadDraft();
+    updateTypeLabels();
+    updateCounters();
+    confirmCircle();
+});
+</script>
+{% endblock %}

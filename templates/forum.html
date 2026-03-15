@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        .forum-hero {
+            margin: -2px -2px 12px -2px;
+            border-radius: 18px;
+            background: linear-gradient(145deg, #4a0f0f, #2d0909);
+            color: #fff;
+            padding: 14px 14px 12px 14px;
+            box-shadow: 0 10px 24px rgba(60, 10, 10, 0.36);
+        }
+        .forum-hero-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .forum-hero-title {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .forum-hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .forum-hero-action {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+            text-decoration: none;
+            transition: transform .18s ease, background-color .18s ease;
+        }
+        .forum-hero-action:hover {
+            transform: translateY(-1px);
+            background-color: rgba(255,255,255,0.1);
+        }
+        .forum-top-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 6px 2px 2px 2px;
+            margin-bottom: 12px;
+        }
+        .forum-tab-chip {
+            white-space: nowrap;
+            border-radius: 999px;
+            padding: 8px 13px;
+            border: 1px solid rgba(0,0,0,0.08);
+            font-size: 12px;
+            color: var(--secondary-color);
+            background: rgba(255,255,255,0.92);
+        }
+        .forum-tab-chip.active {
+            color: #111;
+            border-color: rgba(255,214,0,0.45);
+            background: rgba(255,214,0,0.28);
+            font-weight: 600;
+        }
+        .forum-feed-card {
+            display: block;
+            text-decoration: none;
+            color: var(--text-color);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 18px;
+            padding: 13px 13px 11px 13px;
+            background: #fff;
+            box-shadow: 0 7px 18px rgba(0,0,0,0.07);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .forum-feed-card + .forum-feed-card {
+            margin-top: 12px;
+        }
+        .forum-feed-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 11px 22px rgba(0,0,0,0.1);
+        }
+        .forum-cate-row {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            margin: 2px 0 10px 0;
+            padding-bottom: 2px;
+        }
+        .forum-cate-chip {
+            flex-shrink: 0;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 11px;
+            color: var(--secondary-color);
+            background: rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.06);
+            text-decoration: none;
+            transition: background-color .18s ease, color .18s ease;
+        }
+        .forum-cate-chip:hover {
+            background-color: rgba(0,0,0,0.08);
+            color: #222;
+        }
+        .forum-float-secondary {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #fff;
+            color: #333;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        .forum-section-title {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            border: none;
+            padding: 0;
+        }
+        .forum-section-link {
+            font-size: 12px;
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+        .forum-metric-row {
+            font-size: 12px;
+            color: var(--secondary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .forum-metric-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.1px;
+        }
+        .forum-block-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .forum-grid-two {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .forum-circle-card {
+            text-decoration: none;
+            color: var(--text-color);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 13px;
+            padding: 11px;
+            background: #fff;
+        }
+        .forum-circle-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        .forum-circle-sub {
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+        .forum-discover-row {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .forum-discover-card {
+            text-decoration: none;
+            color: var(--text-color);
+            min-width: 172px;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 13px;
+            padding: 11px;
+            background: #fff;
+        }
+        .forum-post-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 9px;
+        }
+        .forum-author-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .forum-post-type {
+            font-size: 11px;
+            color: var(--accent-color);
+            padding: 5px 9px;
+            border-radius: 12px;
+            background: rgba(255,152,0,0.12);
+        }
+        .forum-post-list {
+            display: grid;
+            gap: 10px;
+        }
+        .forum-author-meta {
+            flex: 1;
+        }
+        .forum-author-name {
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1;
+        }
+        .forum-post-title {
+            margin-bottom: 7px;
+        }
+        .forum-post-content {
+            margin-bottom: 9px;
+        }
+        .forum-author-time {
+            margin-top: 4px;
+        }
+        .forum-post-title.ui-title-md {
+            margin-bottom: 7px;
+        }
+        .forum-block-head-tight {
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .forum-hero {
+                margin: -8px -8px 12px -8px; 
+                border-radius: 0;
+                padding: 16px;
+            }
+            
+            .forum-top-tabs {
+                flex-wrap: wrap;
+                overflow-x: visible;
+                height: auto;
+                padding-bottom: 0;
+            }
+            
+            .forum-tab-chip {
+                margin-bottom: 6px;
+                flex: 1 0 auto;
+                text-align: center;
+                white-space: normal;
+            }
+
+            .forum-cate-row {
+                flex-wrap: wrap;
+                overflow-x: visible;
+                height: auto;
+                padding-bottom: 0;
+                justify-content: flex-start;
+            }
+
+            .forum-cate-chip {
+                margin-bottom: 6px;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .forum-discover-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                overflow-x: visible;
+                padding-right: 0;
+                padding-bottom: 0;
+            }
+            
+            .forum-discover-card {
+                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
+                height: 100%;
+            }
+            
+            .forum-grid-two {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .forum-float-button {
+                bottom: 90px;
+                right: 16px;
+            }
+            
+            .forum-module {
+                padding: 12px;
+                margin-bottom: 12px;
+                width: 100%;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            
+            .forum-post-title.ui-title-md {
+                font-size: 16px;
+            }
+            
+            .forum-post-content.ui-body-sm {
+                font-size: 14px;
+                -webkit-line-clamp: 3;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .forum-discover-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <!-- 顶部搜索栏 -->
+    <div class="forum-module fade-in-up">
+        <div class="forum-hero">
+            <div class="forum-hero-top">
+                <div class="forum-hero-title">圈子</div>
+                <div class="forum-hero-actions">
+                    <a class="forum-hero-action" href="{{ url_for('messages_list') }}">⌁</a>
+                    <a class="forum-hero-action" href="{{ url_for('new_post') }}">＋</a>
+                </div>
+            </div>
+        </div>
+        <!-- 搜索栏 -->
+        <form method="GET" action="{{ url_for('forum') }}" class="forum-search-container">
+            <div class="forum-search-box">
+                <span class="forum-search-icon">⌕</span>
+                <input type="text" name="search" placeholder="圈内搜索" value="{{ search_query or '' }}" class="forum-search-input" autocomplete="off">
+                <button type="submit" class="forum-search-button">搜索</button>
+                <div class="forum-search-suggestions"></div>
+            </div>
+        </form>
+        <div class="forum-top-tabs">
+            <span class="forum-tab-chip active">圈子动态</span>
+            <span class="forum-tab-chip">二手集市</span>
+            <span class="forum-tab-chip">组局</span>
+            <span class="forum-tab-chip">评分</span>
+            <span class="forum-tab-chip">最新</span>
+        </div>
+        <div class="forum-cate-row">
+            {% for circle in circles[:6] %}
+            <a class="forum-cate-chip" href="{{ url_for('circle_detail', circle_id=circle.id) }}">{{ circle.name }}</a>
+            {% endfor %}
+            {% if not circles %}
+            <span class="forum-cate-chip">暂无圈子</span>
+            {% endif %}
+            <span class="forum-tab-chip">圈友互助</span>
+        </div>
+    </div>
+    
+    <div class="forum-module fade-in-up stagger-delay-1">
+        <div class="forum-block-head">
+            <h3 class="forum-section-title">我的圈子</h3>
+            <a href="{{ url_for('create_circle') }}" class="ui-link-accent">创建圈子</a>
+        </div>
+        {% if circles %}
+        <div class="forum-grid-two">
+            {% for circle in circles[:4] %}
+            <a href="{{ url_for('circle_detail', circle_id=circle.id) }}" class="forum-circle-card">
+                <div class="forum-circle-title">{{ circle.name }}</div>
+                <div class="forum-circle-sub">已加入 · 进入讨论</div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="ui-empty-box">还没有加入圈子，先创建一个吧。</div>
+        {% endif %}
+    </div>
+
+    <div class="forum-module fade-in-up stagger-delay-2">
+        <div class="forum-block-head">
+            <h3 class="forum-section-title">发现圈子</h3>
+            <a href="{{ url_for('create_circle') }}" class="forum-section-link">更多</a>
+        </div>
+        {% if all_circles %}
+        <div class="forum-discover-row">
+            {% for item in all_circles[:8] %}
+            <a href="{{ url_for('circle_detail', circle_id=item.circle.id) }}" class="forum-discover-card">
+                <div class="forum-circle-title">{{ item.circle.name }}</div>
+                <div class="forum-circle-sub">热度 {{ item.hot_score }} · {{ item.member_count }}人</div>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="forum-module fade-in-up stagger-delay-3">
+        <div class="forum-block-head forum-block-head-tight">
+            <h3 class="forum-section-title">最新帖子</h3>
+            <a href="{{ url_for('new_post') }}" class="ui-link-accent">去发布 →</a>
+        </div>
+        {% if recent_posts %}
+            <div class="forum-post-list">
+                {% for post in recent_posts %}
+                    <a href="{{ url_for('post', post_id=post.id) }}" class="forum-feed-card">
+                        <div class="forum-post-head">
+                            <div class="forum-author-avatar">
+                                <img src="{{ resolve_avatar_url(post.author) }}" alt="{{ post.author.username }}" class="ui-avatar-cover">
+                            </div>
+                            <div class="forum-author-meta">
+                                <div class="forum-author-name">{{ post.author.username }}</div>
+                                <div class="forum-author-time ui-meta-sm">{{ post.date_posted.strftime('%m-%d %H:%M') }} · Lv.{{ post.author.level }}</div>
+                            </div>
+                            <span class="forum-post-type">{{ post.post_type }}</span>
+                        </div>
+                        <div class="forum-post-title ui-title-md">{{ post.title }}</div>
+                        <div class="forum-post-content ui-body-sm">{{ post.content[:74] }}{% if post.content|length > 74 %}...{% endif %}</div>
+                        <div class="forum-metric-row">
+                            <span class="forum-metric-item">↗ <span>分享</span></span>
+                            <span class="forum-metric-item">◔ <span>{{ post.comment_count or 0 }}</span></span>
+                            <span class="forum-metric-item">♡ <span>{{ post.like_count or 0 }}</span></span>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="ui-empty-box ui-empty-box-lg">
+                还没有帖子，马上发布第一条内容吧。
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- 悬浮发布按钮 -->
+    <div class="forum-float-button fade-in stagger-delay-4">
+        <a href="{{ url_for('forum') }}" class="forum-float-secondary" title="刷新">↻</a>
+        <!-- 主发布按钮 -->
+        <a href="{{ url_for('new_post') }}" class="forum-post-button" title="发布帖子">
+            +
+        </a>
+    </div>
+{% endblock %}

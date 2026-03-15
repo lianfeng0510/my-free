@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+    <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 24px;">📦</span>
+        发布跑腿订单
+    </h2>
+    
+    <form method="POST" style="margin-top: 16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <!-- 左侧表单组 -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">订单标题</label>
+                    <input type="text" name="title" placeholder="如：代取快递" required
+                           style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">服务类型</label>
+                    <select name="service_type" required
+                            style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px;">
+                        <option value="">请选择服务类型</option>
+                        <option value="代取快递">代取快递</option>
+                        <option value="代买饭">代买饭</option>
+                        <option value="代打印">代打印</option>
+                        <option value="代购物品">代购物品</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">取件地点</label>
+                    <input type="text" name="pick_up_location" placeholder="如：菜鸟驿站" required
+                           style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">送达地点</label>
+                    <input type="text" name="delivery_location" placeholder="如：3号楼215" required
+                           style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px;">
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">小费金额（可选）</label>
+                    <input type="number" name="tip" placeholder="给跑腿员的额外奖励" min="0" step="0.5"
+                           style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px;">
+                </div>
+            </div>
+            
+            <!-- 右侧表单组 -->
+            <div>
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">详细描述</label>
+                    <textarea name="description" placeholder="请详细描述您的需求，如快递大小、备注信息、特殊要求等" required
+                              style="width: 100%; min-height: 180px; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+                
+                <!-- 校内跑腿提示 -->
+                <div style="background: linear-gradient(135deg, #f0fffa 0%, #f5fff7 100%); border: 1px solid #52c41a; border-radius: 12px; padding: 16px; margin-top: 20px;">
+                    <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #52c41a; display: flex; align-items: center; gap: 8px;">
+                        <span>🏫</span>
+                        校内跑腿小贴士
+                    </h4>
+                    <div style="font-size: 12px; color: #666; line-height: 1.5;">
+                        <p style="margin: 0 0 8px 0;">✅ <strong>明确具体位置：</strong>请填写详细楼栋和房间号，避免跑腿员找不到</p>
+                        <p style="margin: 0 0 8px 0;">✅ <strong>预估物品大小：</strong>快递大小、饭菜份数等，帮助跑腿员准备</p>
+                        <p style="margin: 0 0 8px 0;">✅ <strong>设置合理小费：</strong>根据距离和难度设置合适的小费，能更快找到跑腿员</p>
+                        <p style="margin: 0;">✅ <strong>保持电话畅通：</strong>发布后保持手机畅通，方便跑腿员联系</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+            <button type="submit" class="btn btn-accent" style="padding: 12px 32px; font-size: 14px; font-weight: 600;">
+                发布订单
+            </button>
+            <a href="{{ url_for('runner_orders', status='my_orders') }}" class="btn btn-secondary" style="padding: 12px 32px; font-size: 14px;">
+                取消
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <h2 style="margin: 0;">跑腿订单</h2>
+        <a href="{{ url_for('create_runner_order') }}" class="btn btn-accent">发布订单</a>
+    </div>
+    
+    <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+        <a href="{{ url_for('runner_orders', status='pending') }}" 
+           class="btn {% if status_filter == 'pending' %}btn-accent{% else %}btn-secondary{% endif %}"
+           style="padding: 6px 12px; font-size: 12px;">
+            待接单
+        </a>
+        <a href="{{ url_for('runner_orders', status='accepted') }}" 
+           class="btn {% if status_filter == 'accepted' %}btn-accent{% else %}btn-secondary{% endif %}"
+           style="padding: 6px 12px; font-size: 12px;">
+            已接单
+        </a>
+        <a href="{{ url_for('runner_orders', status='in_progress') }}" 
+           class="btn {% if status_filter == 'in_progress' %}btn-accent{% else %}btn-secondary{% endif %}"
+           style="padding: 6px 12px; font-size: 12px;">
+            配送中
+        </a>
+        <a href="{{ url_for('runner_orders', status='completed') }}" 
+           class="btn {% if status_filter == 'completed' %}btn-accent{% else %}btn-secondary{% endif %}"
+           style="padding: 6px 12px; font-size: 12px;">
+            已完成
+        </a>
+        <a href="{{ url_for('runner_orders', status='my_orders') }}" 
+           class="btn {% if status_filter == 'my_orders' %}btn-accent{% else %}btn-secondary{% endif %}"
+           style="padding: 6px 12px; font-size: 12px;">
+            我的发布
+        </a>
+        <a href="{{ url_for('runner_orders', status='my_runs') }}" 
+           class="btn {% if status_filter == 'my_runs' %}btn-accent{% else %}btn-secondary{% endif %}"
+           style="padding: 6px 12px; font-size: 12px;">
+            我的接单
+        </a>
+    </div>
+    {% if not can_accept_orders %}
+    <div style="margin-top: 12px; padding: 10px 12px; border-radius: 10px; background-color: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.25); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="font-size: 13px; color: var(--text-color);">普通用户暂不可接单，请先完成跑腿员认证。</span>
+        <form method="POST" action="{{ url_for('become_runner') }}" style="margin: 0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;">申请成为跑腿员</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+{% if orders %}
+    {% for order in orders %}
+    <div class="post" style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+                <h3 style="margin: 0 0 4px 0;">{{ order.title }}</h3>
+                <span style="font-size: 12px; color: var(--secondary-color);">订单号：{{ order.order_number }}</span>
+            </div>
+            <span style="
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 500;
+                {% if order.status == 'pending' %}
+                    background-color: #fff3cd;
+                    color: #856404;
+                {% elif order.status == 'accepted' %}
+                    background-color: #d1ecf1;
+                    color: #0c5460;
+                {% elif order.status == 'in_progress' %}
+                    background-color: #cce5ff;
+                    color: #004085;
+                {% elif order.status == 'completed' %}
+                    background-color: #d4edda;
+                    color: #155724;
+                {% elif order.status == 'cancelled' %}
+                    background-color: #f8d7da;
+                    color: #721c24;
+                {% endif %}
+            ">
+                {% if order.status == 'pending' %}
+                    待接单
+                {% elif order.status == 'accepted' %}
+                    已接单
+                {% elif order.status == 'in_progress' %}
+                    配送中
+                {% elif order.status == 'completed' %}
+                    已完成
+                {% elif order.status == 'cancelled' %}
+                    已取消
+                {% endif %}
+            </span>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">服务类型</div>
+                <div style="font-size: 14px; font-weight: 500;">{{ order.service_type }}</div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">取件地点</div>
+                <div style="font-size: 14px;">{{ order.pick_up_location }}</div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">送达地点</div>
+                <div style="font-size: 14px;">{{ order.delivery_location }}</div>
+            </div>
+            {% if order.tip > 0 %}
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">小费</div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--accent-color);">¥{{ order.tip }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <p style="font-size: 14px; color: var(--text-color); margin-bottom: 12px;">{{ order.description }}</p>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 12px; color: var(--secondary-color);">
+                发布时间：{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}
+                {% if order.creator %}
+                    · 发布者：{{ order.creator.username }}
+                {% endif %}
+                {% if order.runner %}
+                    · 跑腿员：{{ order.runner.username }}
+                {% endif %}
+            </span>
+            <a href="{{ url_for('runner_order_detail', order_id=order.id) }}" class="btn btn-accent" style="padding: 6px 12px; font-size: 12px;">
+                查看详情
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if pagination and pagination.pages > 1 %}
+    <div style="margin-top: 24px; text-align: center;">
+        <nav style="display: inline-flex; gap: 8px; align-items: center;">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('runner_orders', status=status_filter, page=pagination.prev_num) }}" 
+               class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                上一页
+            </a>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <span style="padding: 6px 12px; border-radius: 4px; background-color: var(--accent-color); color: white; font-size: 12px;">
+                        {{ page_num }}
+                    </span>
+                    {% else %}
+                    <a href="{{ url_for('runner_orders', status=status_filter, page=page_num) }}" 
+                       class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                        {{ page_num }}
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <span style="padding: 6px;">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <a href="{{ url_for('runner_orders', status=status_filter, page=pagination.next_num) }}" 
+               class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                下一页
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+{% else %}
+    <div class="post" style="text-align: center; padding: 40px;">
+        <p style="font-size: 16px; color: var(--secondary-color); margin-bottom: 16px;">暂无订单</p>
+        <a href="{{ url_for('create_runner_order') }}" class="btn btn-accent">发布第一个订单</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="post">
+    <!-- 对话头部 -->
+    <div style="display: flex; align-items: center; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;">
+        <a href="{{ url_for('messages_list') }}" style="text-decoration: none; color: var(--text-color);">
+            <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                ←
+            </div>
+        </a>
+        
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background-color: #f0f0f0;">
+                <img src="{{ resolve_avatar_url(other_user) }}" 
+                     alt="{{ other_user.username }}" 
+                     style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div>
+                <div style="font-weight: 600; font-size: 18px; color: var(--text-color);">{{ other_user.username }}</div>
+                <div style="font-size: 13px; color: var(--secondary-color);">Lv.{{ other_user.level }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 消息列表 -->
+    <div id="messages-container" style="margin-bottom: 24px; min-height: 400px;">
+        {% if messages %}
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for msg in messages %}
+            <div class="message-item {% if msg.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %}" 
+                 style="display: flex; {% if msg.sender_id == current_user.id %}justify-content: flex-end;{% endif %}">
+                <div style="max-width: 70%; display: flex; gap: 8px; align-items: flex-start;">
+                    {% if msg.sender_id != current_user.id %}
+                    <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background-color: #f0f0f0; flex-shrink: 0;">
+                        <img src="{{ resolve_avatar_url(msg.sender) }}" 
+                             alt="{{ msg.sender.username }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <div style="margin-bottom: 4px; {% if msg.sender_id == current_user.id %}text-align: right;{% endif %}">
+                            {% if msg.sender_id != current_user.id %}
+                            <span style="font-size: 12px; color: var(--secondary-color);">{{ msg.sender.username }}</span>
+                            {% endif %}
+                            <span style="font-size: 11px; color: var(--secondary-color); margin-left: 8px;">{{ msg.sent_at.strftime('%H:%M') }}</span>
+                            {% if msg.is_read and msg.sender_id == current_user.id %}
+                            <span style="font-size: 11px; color: var(--secondary-color); margin-left: 4px;">✓ 已读</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="message-content" 
+                             style="padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4;
+                                    {% if msg.sender_id == current_user.id %}
+                                    background-color: var(--accent-color); color: white; border-bottom-right-radius: 4px;
+                                    {% else %}
+                                    background-color: rgba(0,0,0,0.05); color: var(--text-color); border-bottom-left-radius: 4px;
+                                    {% endif %}">
+                            {% set text_content = msg.content %}
+                            {% if '[img]' in text_content and '[/img]' in text_content %}
+                                {% set img_path = text_content.split('[img]')[1].split('[/img]')[0] %}
+                                {% set text_content = text_content.replace('[img]' + img_path + '[/img]', '').strip() %}
+                            {% else %}
+                                {% set img_path = '' %}
+                            {% endif %}
+                            {% if '[bargain]' in text_content and '[/bargain]' in text_content %}
+                                {% set bargain_amount = text_content.split('[bargain]')[1].split('[/bargain]')[0] %}
+                                {% set text_content = text_content.replace('[bargain]' + bargain_amount + '[/bargain]', '').strip() %}
+                            {% else %}
+                                {% set bargain_amount = '' %}
+                            {% endif %}
+                            {% if text_content %}<div>{{ text_content }}</div>{% endif %}
+                            {% if bargain_amount %}
+                            <div style="margin-top: 6px; font-size: 12px; padding: 4px 8px; border-radius: 8px; background-color: rgba(255,255,255,0.2);">砍价报价：¥{{ bargain_amount }}</div>
+                            {% endif %}
+                            {% if img_path %}
+                            <div style="margin-top: 8px;">
+                                <img src="{{ url_for('static', filename=img_path) }}" alt="chat image" style="max-width: 180px; border-radius: 8px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if msg.sender_id == current_user.id %}
+                    <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background-color: #f0f0f0; flex-shrink: 0;">
+                        <img src="{{ resolve_avatar_url(current_user) }}" 
+                             alt="{{ current_user.username }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 48px; color: var(--secondary-color); margin-bottom: 16px;">💬</div>
+            <h3 style="color: var(--text-color); margin-bottom: 12px;">开始对话</h3>
+            <p style="color: var(--secondary-color);">
+                这是您和 {{ other_user.username }} 的第一次对话<br>
+                发送第一条消息开始聊天吧
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 消息输入框 -->
+    <form method="POST" enctype="multipart/form-data" id="message-form" style="position: sticky; bottom: 20px; background-color: var(--card-color); padding: 16px; border-radius: var(--border-radius); box-shadow: var(--shadow-lg);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <!-- 快捷短语 -->
+        <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="quick-reply" data-text="价格能便宜点吗？" style="padding: 6px 12px; font-size: 12px; background-color: #f0f0f0; border: 1px solid #d9d9d9; border-radius: 16px; color: #666; cursor: pointer;">
+                💰 价格能便宜点吗？
+            </button>
+            <button type="button" class="quick-reply" data-text="什么时候方便交易？" style="padding: 6px 12px; font-size: 12px; background-color: #f0f0f0; border: 1px solid #d9d9d9; border-radius: 16px; color: #666; cursor: pointer;">
+                🕒 什么时候方便交易？
+            </button>
+            <button type="button" class="quick-reply" data-text="在哪里见面交易？" style="padding: 6px 12px; font-size: 12px; background-color: #f0f0f0; border: 1px solid #d9d9d9; border-radius: 16px; color: #666; cursor: pointer;">
+                📍 在哪里见面交易？
+            </button>
+            <button type="button" class="quick-reply" data-text="商品还在吗？" style="padding: 6px 12px; font-size: 12px; background-color: #f0f0f0; border: 1px solid #d9d9d9; border-radius: 16px; color: #666; cursor: pointer;">
+                📦 商品还在吗？
+            </button>
+            <button type="button" class="quick-reply" data-text="可以验货吗？" style="padding: 6px 12px; font-size: 12px; background-color: #f0f0f0; border: 1px solid #d9d9d9; border-radius: 16px; color: #666; cursor: pointer;">
+                🔍 可以验货吗？
+            </button>
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+            <textarea name="content" id="message-input" 
+                      placeholder="输入消息..." 
+                      rows="2"
+                      style="flex: 1; padding: 12px 16px; border: 1px solid var(--border-color); 
+                             border-radius: var(--border-radius); font-size: 14px; color: var(--text-color); 
+                             background-color: var(--card-color); resize: vertical; min-height: 54px;">{{ prefill_message }}</textarea>
+            
+            <button type="submit" 
+                    style="padding: 0 24px; background-color: var(--accent-color); color: white; 
+                           border: none; border-radius: var(--border-radius); font-size: 14px; 
+                           font-weight: 500; cursor: pointer; min-height: 54px;">
+                发送
+            </button>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <input type="file" name="image" accept="image/*" style="font-size: 12px;">
+            <input type="number" name="bargain_price" step="0.01" min="0" placeholder="发起砍价金额（可选）" style="padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; width: 200px;">
+        </div>
+        
+        <div style="font-size: 12px; color: var(--secondary-color); margin-top: 8px; text-align: right;">
+            按 Enter 发送，Shift+Enter 换行
+        </div>
+    </form>
+</div>
+
+<style>
+    .message-sent .message-content {
+        border-top-right-radius: 4px;
+        border-top-left-radius: 18px;
+    }
+    
+    .message-received .message-content {
+        border-top-left-radius: 4px;
+        border-top-right-radius: 18px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageInput = document.getElementById('message-input');
+    const messageForm = document.getElementById('message-form');
+    const messagesContainer = document.getElementById('messages-container');
+    
+    // 自动聚焦到输入框
+    messageInput.focus();
+    
+    // 自动滚动到底部
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // 页面加载时滚动到底部
+    setTimeout(scrollToBottom, 100);
+    
+    // 输入框高度自适应
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    
+    // 键盘快捷键
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (messageInput.value.trim()) {
+                messageForm.submit();
+            }
+        }
+    });
+    
+    // 快捷短语按钮处理
+    document.querySelectorAll('.quick-reply').forEach(button => {
+        button.addEventListener('click', function() {
+            const text = this.getAttribute('data-text');
+            messageInput.value += (messageInput.value ? ' ' : '') + text;
+            messageInput.focus();
+            // 触发输入事件以更新高度
+            messageInput.dispatchEvent(new Event('input'));
+        });
+    });
+    
+    // 表单提交处理
+    messageForm.addEventListener('submit', function(e) {
+        if (!messageInput.value.trim()) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

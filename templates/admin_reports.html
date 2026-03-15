@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🚨</span>
+                举报管理面板
+            </h3>
+            <div>
+                <span class="badge" style="background-color: var(--secondary-color); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                    共 {{ reports|length }} 条举报
+                </span>
+            </div>
+        </div>
+        
+        {% if reports %}
+            <div class="reports-list">
+                {% for report in reports %}
+                <div class="report-item" style="border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; background-color: {% if report.status == 'pending' %}rgba(255,193,7,0.05){% elif report.status == 'reviewing' %}rgba(0,123,255,0.05){% elif report.status == 'resolved' %}rgba(40,167,69,0.05){% elif report.status == 'dismissed' %}rgba(108,117,125,0.05){% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div>
+                            <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">举报 #{{ report.id }}</h4>
+                            <div style="display: flex; gap: 12px; font-size: 12px; color: var(--secondary-color);">
+                                <span>类型: 
+                                    <span style="font-weight: 600; color: var(--text-color);">
+                                        {% if report.report_type == 'user' %}用户
+                                        {% elif report.report_type == 'post' %}帖子
+                                        {% elif report.report_type == 'comment' %}评论
+                                        {% else %}{{ report.report_type }}
+                                        {% endif %}
+                                    </span>
+                                </span>
+                                <span>|</span>
+                                <span>原因: <span style="font-weight: 600; color: var(--text-color);">{{ report.reason }}</span></span>
+                                <span>|</span>
+                                <span>举报人: 
+                                    <a href="{{ url_for('profile') }}?user_id={{ report.reporter.id }}" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">
+                                        {{ report.reporter.username }}
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="badge" style="background-color: {% if report.status == 'pending' %}var(--warning-color){% elif report.status == 'reviewing' %}var(--info-color){% elif report.status == 'resolved' %}var(--success-color){% elif report.status == 'dismissed' %}var(--secondary-color){% endif %}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                {% if report.status == 'pending' %}待处理
+                                {% elif report.status == 'reviewing' %}审核中
+                                {% elif report.status == 'resolved' %}已处理
+                                {% elif report.status == 'dismissed' %}已驳回
+                                {% else %}{{ report.status }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- 举报内容 -->
+                    <div style="margin-bottom: 16px; padding: 16px; background-color: rgba(0,0,0,0.02); border-radius: var(--border-radius);">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">举报描述:</p>
+                        <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">{{ report.description or '无详细描述' }}</p>
+                    </div>
+                    
+                    <!-- 被举报对象信息 -->
+                    <div style="margin-bottom: 16px; padding: 16px; background-color: rgba(0,0,0,0.02); border-radius: var(--border-radius);">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">被举报对象:</p>
+                        <div style="display: flex; gap: 16px; font-size: 14px;">
+                            {% if report.report_type == 'user' and report.reported_user %}
+                            <div>
+                                <span style="color: var(--secondary-color);">用户: </span>
+                                <a href="{{ url_for('profile') }}?user_id={{ report.reported_user.id }}" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">
+                                    {{ report.reported_user.username }}
+                                </a>
+                            </div>
+                            {% elif report.report_type == 'post' and report.reported_post %}
+                            <div>
+                                <span style="color: var(--secondary-color);">帖子: </span>
+                                <a href="{{ url_for('post', post_id=report.reported_post.id) }}" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">
+                                    {{ report.reported_post.title }}
+                                </a>
+                            </div>
+                            {% elif report.report_type == 'comment' and report.reported_comment %}
+                            <div>
+                                <span style="color: var(--secondary-color);">评论: </span>
+                                <span style="color: var(--text-color); font-weight: 600;">
+                                    {{ report.reported_comment.content[:50] }}{% if report.reported_comment.content|length > 50 %}...{% endif %}
+                                </span>
+                                <span style="color: var(--secondary-color); font-size: 12px;"> (在帖子: <a href="{{ url_for('post', post_id=report.reported_comment.post.id) }}" style="color: var(--accent-color);">{{ report.reported_comment.post.title }}</a>)</span>
+                            </div>
+                            {% else %}
+                            <div style="color: var(--secondary-color);">对象信息缺失或已删除</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- 时间信息 -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; font-size: 12px; color: var(--secondary-color);">
+                        <div>
+                            <p style="margin: 0 0 4px 0; font-weight: 600;">举报时间</p>
+                            <p style="margin: 0;">{{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                        {% if report.resolved_at %}
+                        <div>
+                            <p style="margin: 0 0 4px 0; font-weight: 600;">处理时间</p>
+                            <p style="margin: 0;">{{ report.resolved_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                        {% endif %}
+                        {% if report.resolver %}
+                        <div>
+                            <p style="margin: 0 0 4px 0; font-weight: 600;">处理人</p>
+                            <p style="margin: 0;">
+                                <a href="{{ url_for('profile') }}?user_id={{ report.resolver.id }}" style="color: var(--accent-color); text-decoration: none;">
+                                    {{ report.resolver.username }}
+                                </a>
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 处理结果 -->
+                    {% if report.resolution_notes %}
+                    <div style="margin-bottom: 16px; padding: 16px; background-color: rgba(0,0,0,0.02); border-radius: var(--border-radius);">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">处理说明:</p>
+                        <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">{{ report.resolution_notes }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- 状态更新表单 -->
+                    {% if report.status in ['pending', 'reviewing'] %}
+                    <div style="padding-top: 16px; border-top: 1px solid var(--border-color);">
+                        <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">更新状态</h5>
+                        <form action="{{ url_for('update_report_status', report_id=report.id) }}" method="POST" style="display: flex; gap: 12px; align-items: flex-end;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div style="flex: 1;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-color);">新状态</label>
+                                <select name="status" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--card-color); color: var(--text-color); font-size: 14px;">
+                                    <option value="reviewing" {% if report.status == 'reviewing' %}selected{% endif %}>审核中</option>
+                                    <option value="resolved">已处理</option>
+                                    <option value="dismissed">已驳回</option>
+                                </select>
+                            </div>
+                            <div style="flex: 2;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-color);">处理说明 (可选)</label>
+                                <textarea name="resolution_notes" rows="2" placeholder="填写处理说明..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--card-color); color: var(--text-color); font-size: 14px;"></textarea>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-primary" style="padding: 8px 20px; font-size: 14px;">更新</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 48px 24px; color: var(--secondary-color);">
+                <span style="font-size: 48px; display: block; margin-bottom: 16px;">🚨</span>
+                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">暂无举报</h4>
+                <p style="margin: 0; font-size: 14px;">当前没有待处理的举报</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

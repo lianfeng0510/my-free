@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        @media (max-width: 480px) {
+            /* Optimize grids */
+            div[style*="grid-template-columns: repeat(4, 1fr)"],
+            div[style*="grid-template-columns: repeat(3, 1fr)"] {
+                gap: 8px !important;
+            }
+            
+            /* Target the grid items */
+            div[style*="grid-template-columns"] > a {
+                padding: 10px 4px !important;
+            }
+            
+            /* Target icons in grid items */
+            div[style*="grid-template-columns"] > a > div {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 20px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            /* Target text in grid items */
+            div[style*="grid-template-columns"] > a > span {
+                font-size: 11px !important;
+                white-space: nowrap;
+                transform: scale(0.95);
+            }
+            
+            /* Profile Header */
+            .profile-avatar {
+                width: 64px !important;
+                height: 64px !important;
+                font-size: 24px !important;
+            }
+            
+            h2 {
+                font-size: 18px !important;
+            }
+            
+            /* Stack header actions if needed, or just reduce gap */
+            div[style*="gap: 24px"] {
+                gap: 12px !important;
+            }
+            
+            /* Adjust padding of cards */
+            div[style*="padding: 24px"] {
+                padding: 16px !important;
+            }
+        }
+    </style>
+    <!-- 个人信息卡片 -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="display: flex; align-items: center; gap: 24px;">
+                <div class="profile-avatar" style="width: 96px; height: 96px; border-radius: 50%; border: 4px solid white; background-color: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold;">
+                    {% if user.avatar and user.avatar != 'default_avatar.png' %}
+                    <img src="{{ url_for('static', filename=user.avatar) }}" alt="{{ user.username }}的头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                    {{ user.username[0].upper() }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h2 style="margin: 0; font-size: 20px; font-weight: 600;">{{ user.username }}</h2>
+                        {% if user.role == 'admin' or user.role == 'ambassador' or user.role == 'floor_master' or user.role == 'runner' %}
+                        <span style="background-color: rgba(255,255,255,0.2); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                            {{ '校园大使' if user.role == 'ambassador' else '楼长' if user.role == 'floor_master' else '认证跑腿员' if user.role == 'runner' else '管理员' }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p style="margin: 8px 0;"><span class="user-level" style="background-color: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">Lv.{{ user.level }} | 信用分: {{ user.points }}</span></p>
+                    <p style="margin: 8px 0; font-size: 14px; opacity: 0.9;">学号: {{ '****' + user.username[-4:] }}</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                {% if user.id == current_user.id %}
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-secondary" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 14px; padding: 8px 16px;">
+                    编辑资料
+                </a>
+                {% elif current_user.is_authenticated %}
+                <div style="display: flex; gap: 8px;">
+                    <!-- 关注/取消关注按钮 -->
+                     {% if is_following %}
+                    <form action="{{ url_for('unfollow_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 14px; padding: 8px 16px;">
+                            取消关注
+                        </button>
+                    </form>
+                    {% else %}
+                    <form action="{{ url_for('follow_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 14px; padding: 8px 16px;">
+                            关注
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <!-- 屏蔽/取消屏蔽按钮 -->
+                    {% if is_blocked %}
+                    <form action="{{ url_for('unblock_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary" style="background-color: rgba(255,0,0,0.2); color: white; border: 1px solid rgba(255,0,0,0.3); font-size: 14px; padding: 8px 16px;">
+                            取消屏蔽
+                        </button>
+                    </form>
+                    {% else %}
+                    <form action="{{ url_for('block_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary" style="background-color: rgba(255,0,0,0.2); color: white; border: 1px solid rgba(255,0,0,0.3); font-size: 14px; padding: 8px 16px;">
+                            屏蔽
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <!-- 举报按钮 -->
+                    <a href="{{ url_for('report') }}?user_id={{ user.id }}" class="btn btn-secondary" style="background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 14px; padding: 8px 16px;">
+                        举报用户
+                    </a>
+                    {% if current_user.role == 'admin' and user.role != 'runner' and user.role != 'admin' %}
+                    <form action="{{ url_for('approve_runner', user_id=user.id) }}" method="POST" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary" style="background-color: rgba(40,167,69,0.25); color: white; border: 1px solid rgba(255,255,255,0.3); font-size: 14px; padding: 8px 16px;">
+                            认证跑腿员
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if sold_second_hand_posts %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">已售出二手物品</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+            {% for sold_post in sold_second_hand_posts %}
+            <a href="{{ url_for('post', post_id=sold_post.id) }}" style="display: block; text-decoration: none; color: var(--text-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; background-color: rgba(0,0,0,0.01);">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.4;">{{ sold_post.title }}</div>
+                <div style="font-size: 12px; color: var(--secondary-color); display: flex; justify-content: space-between;">
+                    <span>已售出</span>
+                    <span>¥{{ sold_post.price if sold_post.price is not none else '--' }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 功能列表分组 -->
+    
+    <!-- 交易与发布 -->
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 20px;">💼</span>
+            交易与发布
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+            <a href="{{ url_for('my_posts') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    📝
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">我的帖子</span>
+            </a>
+            <a href="{{ url_for('my_second_hand') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(76,175,80,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    🔄
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">我的二手</span>
+            </a>
+            <a href="{{ url_for('runner_dashboard') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(0,123,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    🚶
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">跑腿员中心</span>
+            </a>
+            <a href="{{ url_for('my_orders') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(255,99,132,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    📋
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">我的订单</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- 社交 -->
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 20px;">👥</span>
+            社交
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <a href="{{ url_for('my_collections') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    ⭐
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">收藏</span>
+            </a>
+            <a href="{{ url_for('my_following') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(76,175,80,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    👁️
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">关注</span>
+            </a>
+            <a href="{{ url_for('my_followers') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(0,123,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    👤
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">粉丝</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- 设置与支持 -->
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 20px;">⚙️</span>
+            设置与支持
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <a href="{{ url_for('edit_profile') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    👤
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">账户设置</span>
+            </a>
+            <a href="{{ url_for('privacy_settings') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.05);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(76,175,80,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    🔒
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">隐私设置</span>
+            </a>
+            <a href="{{ url_for('logout') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--danger-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(220,53,69,0.02); border: 1px solid rgba(220,53,69,0.1);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(220,53,69,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+                    🚪
+                </div>
+                <span style="font-size: 14px; font-weight: 500;">退出登录</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- 底部版本号 -->
+    <div style="text-align: center; padding: 24px; font-size: 12px; color: var(--secondary-color); margin-top: 24px;">
+        当前版本：v1.0.0
+    </div>
+{% endblock %}

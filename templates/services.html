@@ -1,0 +1,627 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        @media (max-width: 480px) {
+            .search-form input[name="search"] {
+                padding: 10px 14px !important;
+                font-size: 13px !important;
+            }
+            .search-form button[type="submit"] {
+                padding: 0 16px !important;
+                font-size: 13px !important;
+            }
+            #service-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 8px !important;
+                padding: 10px !important;
+            }
+            #service-grid > a, #service-grid > div {
+                padding: 8px 4px !important;
+                background-color: transparent !important;
+                border: none !important;
+            }
+            #service-grid div[style*="width: 56px"] {
+                width: 42px !important;
+                height: 42px !important;
+                font-size: 22px !important;
+                margin-bottom: 4px !important;
+            }
+            #service-grid span {
+                font-size: 11px !important;
+                white-space: nowrap;
+                transform: scale(0.9);
+            }
+            /* Hide the extra buttons in the Runner item for the grid view on mobile */
+            #service-grid > div > div:last-child {
+                display: none !important;
+            }
+        }
+    </style>
+    <!-- 顶部搜索栏 -->
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md);">
+        <form method="GET" action="{{ url_for('services') }}" style="margin: 0;">
+            {% if service_type and service_type != 'all' %}
+                <input type="hidden" name="type" value="{{ service_type }}">
+            {% endif %}
+            <div class="search-form" style="display: flex; gap: 0; border-radius: 24px; overflow: hidden; background-color: rgba(0,0,0,0.05);">
+                <input type="text" name="search" placeholder="搜索服务或商家" value="{{ search_query or '' }}" style="flex: 1; border: none; background-color: transparent; padding: 12px 20px; font-size: 14px;">
+                <button type="submit" style="border: none; background-color: var(--accent-color); color: white; padding: 0 24px; font-size: 14px; font-weight: 600;">搜索</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 服务分类网格 -->
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow-md);">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">服务分类</h3>
+        <div id="service-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+            <!-- 二手交易 -->
+            <a href="{{ url_for('services', type='second_hand') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(255,152,0,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+                    🛍️
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center;">二手交易</span>
+            </a>
+            <!-- 跑腿 -->
+            <div style="display: flex; flex-direction: column; align-items: center; padding: 12px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(76,175,80,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(76,175,80,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 8px;">
+                    🚶
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center; margin-bottom: 12px;">跑腿</span>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                    <a href="{{ url_for('create_runner_order') }}" class="btn btn-accent" style="padding: 6px 12px; font-size: 11px;">
+                        下单
+                    </a>
+                    <a href="{{ url_for('runner_dashboard') if current_user.is_authenticated else url_for('login') }}" class="btn btn-success" style="padding: 6px 12px; font-size: 11px;">
+                        接单
+                    </a>
+                </div>
+            </div>
+            <!-- 外卖 -->
+            <a href="{{ url_for('services', type='food') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(255,99,132,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(255,99,132,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+                    🍔
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center;">外卖</span>
+            </a>
+            <!-- 失物招领 -->
+            <a href="{{ url_for('services', type='lost_found') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(0,123,255,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(0,123,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+                    🔍
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center;">失物招领</span>
+            </a>
+            <!-- 兼职招聘 -->
+            <a href="{{ url_for('services', type='part_time') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(153,102,255,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(153,102,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+                    💼
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center;">兼职招聘</span>
+            </a>
+            <!-- 课程资料 -->
+            <a href="{{ url_for('services', type='course') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(255,206,86,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(255,206,86,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+                    📚
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center;">课程资料</span>
+            </a>
+            <!-- 拼车（映射到社团活动类型） -->
+            <a href="{{ url_for('services', type='activity') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(75,192,192,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(75,192,192,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+                    🚗
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center;">拼车</span>
+            </a>
+            <!-- 更多服务 -->
+            <a href="{{ url_for('services') }}" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-color); padding: 20px; border-radius: 12px; transition: all 0.3s ease; background-color: rgba(108,117,125,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(108,117,125,0.1); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+                    📋
+                </div>
+                <span style="font-size: 12px; font-weight: 500; text-align: center;">更多服务</span>
+            </a>
+        </div>
+    </div>
+    
+    
+    <!-- 服务功能模块 -->
+    <div class="mb-4">
+        {% if service_type == 'second_hand' %}
+        <!-- 二手交易专区 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0;">二手交易专区</h3>
+                <a href="{{ url_for('new_post', type='second_hand') }}" class="btn btn-accent" style="font-size: 12px; padding: 6px 16px;">
+                    发布二手
+                </a>
+            </div>
+            
+            <!-- 筛选选项 -->
+            <form method="GET" action="{{ url_for('services') }}" id="filter-form" style="margin: 0;">
+                <input type="hidden" name="type" value="second_hand">
+                {% if search_query %}
+                    <input type="hidden" name="search" value="{{ search_query }}">
+                {% endif %}
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                    <select name="category" onchange="document.getElementById('filter-form').submit()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+                        <option value="">全部分类</option>
+                        <option value="electronics" {% if category == 'electronics' %}selected{% endif %}>电子产品</option>
+                        <option value="books" {% if category == 'books' %}selected{% endif %}>教材书籍</option>
+                        <option value="daily" {% if category == 'daily' %}selected{% endif %}>生活用品</option>
+                        <option value="clothes" {% if category == 'clothes' %}selected{% endif %}>服饰鞋包</option>
+                        <option value="other" {% if category == 'other' %}selected{% endif %}>其他</option>
+                    </select>
+                    <select name="price_sort" onchange="document.getElementById('filter-form').submit()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+                        <option value="">价格排序</option>
+                        <option value="asc" {% if price_sort == 'asc' %}selected{% endif %}>价格从低到高</option>
+                        <option value="desc" {% if price_sort == 'desc' %}selected{% endif %}>价格从高到低</option>
+                    </select>
+                    <select name="condition" onchange="document.getElementById('filter-form').submit()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+                        <option value="">成色排序</option>
+                        <option value="new" {% if condition == 'new' %}selected{% endif %}>全新</option>
+                        <option value="like_new" {% if condition == 'like_new' %}selected{% endif %}>几乎全新</option>
+                        <option value="good" {% if condition == 'good' %}selected{% endif %}>轻微使用</option>
+                        <option value="fair" {% if condition == 'fair' %}selected{% endif %}>明显磨损</option>
+                    </select>
+                </div>
+            </form>
+            
+            <!-- 商品卡片 -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                {% for post in posts %}
+                    <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
+                        <div style="height: 120px; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                            🛍️
+                        </div>
+                        <div style="padding: 12px;">
+                            <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 8px;">
+                                {{ post.title }}
+                            </h4>
+                            <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                                {{ post.content[:50] }}...
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 16px; font-weight: 600; color: var(--danger-color);">
+                                    ¥{{ post.price }}
+                                </span>
+                                <a href="{{ url_for('post', post_id=post.id) }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                    查看
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    {% for i in range(4) %}
+                        <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
+                            <div style="height: 120px; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                                {% if i == 0 %}💻{% elif i == 1 %}📱{% elif i == 2 %}📚{% else %}👕{% endif %}
+                            </div>
+                            <div style="padding: 12px;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 8px;">
+                                    {% if i == 0 %}二手笔记本电脑{% elif i == 1 %}iPhone 13{% elif i == 2 %}考研复习资料{% else %}运动服套装{% endif %}
+                                </h4>
+                                <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                                    {% if i == 0 %}9成新，无划痕{% elif i == 1 %}8成新，配件齐全{% elif i == 2 %}全新，未拆封{% else %}7成新，轻微磨损{% endif %}
+                                </p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 16px; font-weight: 600; color: var(--danger-color);">
+                                        ¥{% if i == 0 %}2999{% elif i == 1 %}3999{% elif i == 2 %}299{% else %}199{% endif %}
+                                    </span>
+                                    <a href="{{ url_for('services', type='second_hand') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                        查看
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            
+            <div style="text-align: center; margin-top: 16px;">
+                <a href="{{ url_for('services', type='second_hand') }}" style="font-size: 12px; color: var(--accent-color); text-decoration: none;">
+                    查看更多 →
+                </a>
+            </div>
+        </div>
+        
+        {% elif service_type == 'runner' %}
+        <!-- 跑腿服务 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 64px; margin-bottom: 16px;">🚶</div>
+                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">校园跑腿服务</h3>
+                <p style="font-size: 14px; color: var(--secondary-color); margin-bottom: 24px;">
+                    代取快递、代买饭、代打印，让校园生活更便捷
+                </p>
+            </div>
+        </div>
+        
+        <!-- 跑腿服务分类 -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <!-- 下单页面 -->
+            <a href="{{ url_for('create_runner_order') }}" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 32px; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-color); text-align: center; transition: all 0.3s ease; border: 2px solid var(--accent-color);">
+                <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+                <h4 style="font-size: 18px; font-weight: 600; margin: 0 0 8px 0; color: var(--accent-color);">下单页面</h4>
+                <p style="font-size: 13px; color: var(--secondary-color); margin: 0;">发布你的跑腿需求</p>
+            </a>
+            
+            <!-- 跑腿员中心 -->
+            <a href="{{ url_for('runner_dashboard') if current_user.is_authenticated else url_for('login') }}" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 32px; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-color); text-align: center; transition: all 0.3s ease; border: 2px solid var(--success-color);">
+                <div style="font-size: 48px; margin-bottom: 16px;">🚶</div>
+                <h4 style="font-size: 18px; font-weight: 600; margin: 0 0 8px 0; color: var(--success-color);">跑腿员中心</h4>
+                <p style="font-size: 13px; color: var(--secondary-color); margin: 0;">接单、配送、管理订单</p>
+            </a>
+        </div>
+        
+        <!-- 快速入口 -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <a href="{{ url_for('create_runner_order') }}" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-color); text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 40px; margin-bottom: 12px;">📦</div>
+                <h4 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">发布订单</h4>
+                <p style="font-size: 12px; color: var(--secondary-color); margin: 0;">发布你的跑腿需求</p>
+            </a>
+            
+            <a href="{{ url_for('runner_orders', status='pending') }}" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-color); text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 40px; margin-bottom: 12px;">👀</div>
+                <h4 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">待接单</h4>
+                <p style="font-size: 12px; color: var(--secondary-color); margin: 0;">查看可接的订单</p>
+            </a>
+            
+            <a href="{{ url_for('runner_orders', status='my_orders') }}" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-color); text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 40px; margin-bottom: 12px;">📋</div>
+                <h4 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">我的订单</h4>
+                <p style="font-size: 12px; color: var(--secondary-color); margin: 0;">查看我发布的订单</p>
+            </a>
+            
+            <a href="{{ url_for('runner_orders', status='my_runs') }}" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text-color); text-align: center; transition: all 0.3s ease;">
+                <div style="font-size: 40px; margin-bottom: 12px;">🏃</div>
+                <h4 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">我的接单</h4>
+                <p style="font-size: 12px; color: var(--secondary-color); margin: 0;">查看我接的订单</p>
+            </a>
+        </div>
+        
+        {% elif service_type == 'food' %}
+        <!-- 外卖聚合页 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md);">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">外卖聚合</h3>
+            
+            <!-- 外卖分类 -->
+            <div style="display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px;">
+                <button style="flex-shrink: 0; padding: 6px 16px; border-radius: 20px; background-color: var(--accent-color); color: white; border: none; font-size: 12px; font-weight: 500;">
+                    全部
+                </button>
+                <button style="flex-shrink: 0; padding: 6px 16px; border-radius: 20px; background-color: rgba(0,0,0,0.05); color: var(--text-color); border: 1px solid var(--border-color); font-size: 12px; font-weight: 500;">
+                    食堂
+                </button>
+                <button style="flex-shrink: 0; padding: 6px 16px; border-radius: 20px; background-color: rgba(0,0,0,0.05); color: var(--text-color); border: 1px solid var(--border-color); font-size: 12px; font-weight: 500;">
+                    后山
+                </button>
+                <button style="flex-shrink: 0; padding: 6px 16px; border-radius: 20px; background-color: rgba(0,0,0,0.05); color: var(--text-color); border: 1px solid var(--border-color); font-size: 12px; font-weight: 500;">
+                    校外
+                </button>
+                <button style="flex-shrink: 0; padding: 6px 16px; border-radius: 20px; background-color: rgba(0,0,0,0.05); color: var(--text-color); border: 1px solid var(--border-color); font-size: 12px; font-weight: 500;">
+                    饮品
+                </button>
+                <button style="flex-shrink: 0; padding: 6px 16px; border-radius: 20px; background-color: rgba(0,0,0,0.05); color: var(--text-color); border: 1px solid var(--border-color); font-size: 12px; font-weight: 500;">
+                    快餐
+                </button>
+            </div>
+            
+            <!-- 商家列表 -->
+            <div class="space-y-4">
+                {% for i in range(3) %}
+                    <div style="display: flex; gap: 16px; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.3s ease;">
+                        <div style="width: 80px; height: 80px; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 32px; border-radius: 8px;">
+                            {% if i == 0 %}🍔{% elif i == 1 %}🍜{% else %}🥤{% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin: 0;">
+                                    {% if i == 0 %}麦当劳{% elif i == 1 %}兰州拉面{% else %}一点点{% endif %}
+                                </h4>
+                                <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                                    {% if i == 0 %}校外{% elif i == 1 %}食堂{% else %}后山{% endif %}
+                                </span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 8px;">
+                                <span>⭐ {% if i == 0 %}4.8{% elif i == 1 %}4.6{% else %}4.9{% endif %}</span>
+                                <span style="margin-left: 12px;">起送 ¥{% if i == 0 %}20{% elif i == 1 %}15{% else %}10{% endif %}</span>
+                                <span style="margin-left: 12px;">配送费 ¥{% if i == 0 %}5{% elif i == 1 %}2{% else %}3{% endif %}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 12px; color: var(--secondary-color);">
+                                    预计送达 {% if i == 0 %}30{% elif i == 1 %}15{% else %}20{% endif %}分钟
+                                </span>
+                                <a href="{{ url_for('services', type='food') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 16px;">
+                                    点餐
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% elif service_type == 'lost_found' %}
+        <!-- 失物招领专区 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0;">失物招领专区</h3>
+                <a href="{{ url_for('new_post', type='lost_found') }}" class="btn btn-accent" style="font-size: 12px; padding: 6px 16px;">
+                    发布失物
+                </a>
+            </div>
+            
+            <!-- 筛选选项 -->
+            <div style="display: flex; flex-wrap: gap-8; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                <select style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px; margin-right: 12px;">
+                    <option>全部类型</option>
+                    <option>遗失物品</option>
+                    <option>招领物品</option>
+                </select>
+                <select style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+                    <option>时间排序</option>
+                    <option>最新发布</option>
+                    <option>最早发布</option>
+                </select>
+            </div>
+            
+            <!-- 失物招领列表 -->
+            <div class="space-y-4">
+                {% for post in posts %}
+                    <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.3s ease;">
+                        <div style="display: flex; gap: 12px;">
+                            <div style="width: 80px; height: 80px; border-radius: 8px; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                                🔍
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                    <h4 style="font-size: 14px; font-weight: 600; margin: 0;">
+                                        {{ post.title }}
+                                    </h4>
+                                    <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                                        失物
+                                    </span>
+                                </div>
+                                <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                                    {{ post.content[:100] }}...
+                                </p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 12px; color: var(--secondary-color);">
+                                        {{ post.date_posted.strftime('%Y-%m-%d') }}
+                                    </span>
+                                    <a href="{{ url_for('post', post_id=post.id) }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                        查看详情
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    {% for i in range(3) %}
+                        <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.3s ease;">
+                            <div style="display: flex; gap: 12px;">
+                                <div style="width: 80px; height: 80px; border-radius: 8px; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                                    {% if i == 0 %}📱{% elif i == 1 %}📚{% else %}🔑{% endif %}
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                        <h4 style="font-size: 14px; font-weight: 600; margin: 0;">
+                                            {% if i == 0 %}iPhone 14 手机{% elif i == 1 %}高等数学教材{% else %}宿舍钥匙串{% endif %}
+                                        </h4>
+                                        <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                                            {% if i == 0 %}遗失{% elif i == 1 %}招领{% else %}遗失{% endif %}
+                                        </span>
+                                    </div>
+                                    <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                                        {% if i == 0 %}在图书馆三楼阅览室遗失，黑色外壳{% elif i == 1 %}在食堂捡到，有名字标记{% else %}在教学楼门口遗失，有卡通挂件{% endif %}
+                                    </p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 12px; color: var(--secondary-color);">
+                                            {% if i == 0 %}2024-01-15{% elif i == 1 %}2024-01-14{% else %}2024-01-13{% endif %}
+                                        </span>
+                                        <a href="{{ url_for('services', type='lost_found') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                            查看详情
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            
+            <div style="text-align: center; margin-top: 16px;">
+                <a href="{{ url_for('services', type='lost_found') }}" style="font-size: 12px; color: var(--accent-color); text-decoration: none;">
+                    查看更多 →
+                </a>
+            </div>
+        </div>
+        
+        {% elif service_type == 'part_time' %}
+        <!-- 兼职招聘 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0;">兼职招聘</h3>
+                <a href="{{ url_for('new_post', type='part_time') }}" class="btn btn-accent" style="font-size: 12px; padding: 6px 16px;">
+                    发布兼职
+                </a>
+            </div>
+            
+            <!-- 兼职列表 -->
+            <div class="space-y-4">
+                {% for i in range(3) %}
+                    <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.3s ease;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 8px;">
+                            {% if i == 0 %}校园兼职：图书馆助理{% elif i == 1 %}家教兼职：小学数学{% else %}兼职：咖啡店服务员{% endif %}
+                        </h4>
+                        <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                            {% if i == 0 %}工作时间：周末，薪资：15元/小时{% elif i == 1 %}工作时间：晚上，薪资：80元/次{% else %}工作时间：课余时间，薪资：20元/小时{% endif %}
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: var(--secondary-color);">
+                                {% if i == 0 %}长期{% elif i == 1 %}短期{% else %}长期{% endif %}
+                            </span>
+                            <a href="{{ url_for('services', type='part_time') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                查看详情
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% elif service_type == 'course' %}
+        <!-- 课程资料 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0;">课程资料</h3>
+                <a href="{{ url_for('new_post', type='course') }}" class="btn btn-accent" style="font-size: 12px; padding: 6px 16px;">
+                    分享资料
+                </a>
+            </div>
+            
+            <!-- 课程资料列表 -->
+            <div class="space-y-4">
+                {% for i in range(3) %}
+                    <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.3s ease;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 8px;">
+                            {% if i == 0 %}高等数学上册复习资料{% elif i == 1 %}大学物理实验报告模板{% else %}计算机基础知识点总结{% endif %}
+                        </h4>
+                        <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                            {% if i == 0 %}包含历年真题和详细解答{% elif i == 1 %}实验报告模板和数据处理方法{% else %}知识点总结和习题练习{% endif %}
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: var(--secondary-color);">
+                                {% if i == 0 %}数学类{% elif i == 1 %}物理类{% else %}计算机类{% endif %}
+                            </span>
+                            <a href="{{ url_for('services', type='course') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                下载资料
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% elif service_type == 'carpool' %}
+        <!-- 拼车 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin: 0;">拼车服务</h3>
+                <a href="{{ url_for('new_post', type='carpool') }}" class="btn btn-accent" style="font-size: 12px; padding: 6px 16px;">
+                    发布拼车
+                </a>
+            </div>
+            
+            <!-- 拼车列表 -->
+            <div class="space-y-4">
+                {% for i in range(3) %}
+                    <div style="padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.3s ease;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 8px;">
+                            {% if i == 0 %}北京 ↔ 上海{% elif i == 1 %}学校 ↔ 火车站{% else %}学校 ↔ 机场{% endif %}
+                        </h4>
+                        <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                            {% if i == 0 %}出发时间：本周五下午，空位：3个{% elif i == 1 %}出发时间：每天早上，空位：2个{% else %}出发时间：周末，空位：1个{% endif %}
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: var(--secondary-color);">
+                                费用：{% if i == 0 %}200元{% elif i == 1 %}20元{% else %}50元{% endif %}
+                            </span>
+                            <a href="{{ url_for('services', type='carpool') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                联系车主
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- 全部服务 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">服务中心</h3>
+            <p style="font-size: 14px; color: var(--secondary-color); text-align: center; padding: 20px;">
+                请从上方选择您需要的服务类型
+            </p>
+            
+            <!-- 推荐服务 -->
+            <h4 style="font-size: 14px; font-weight: 600; margin: 16px 0 12px;">推荐服务</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; padding: 16px; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🛍️</div>
+                    <h5 style="font-size: 14px; font-weight: 600; margin: 0 0 4px;">二手交易</h5>
+                    <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">买卖闲置物品</p>
+                    <a href="{{ url_for('services', type='second_hand') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                        进入
+                    </a>
+                </div>
+                <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; padding: 16px; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🚶</div>
+                    <h5 style="font-size: 14px; font-weight: 600; margin: 0 0 4px;">跑腿服务</h5>
+                    <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">代取快递、代买饭</p>
+                    <a href="{{ url_for('services', type='runner') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                        进入
+                    </a>
+                </div>
+                <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; padding: 16px; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🍔</div>
+                    <h5 style="font-size: 14px; font-weight: 600; margin: 0 0 4px;">外卖服务</h5>
+                    <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">校园周边美食</p>
+                    <a href="{{ url_for('services', type='food') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                        进入
+                    </a>
+                </div>
+                <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; padding: 16px; text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+                    <h5 style="font-size: 14px; font-weight: 600; margin: 0 0 4px;">失物招领</h5>
+                    <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">寻找遗失物品</p>
+                    <a href="{{ url_for('services', type='lost_found') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                        进入
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- 分页控件 -->
+    {% if pagination and pagination.pages > 1 %}
+    <div style="margin-top: 24px; text-align: center;">
+        <nav style="display: inline-flex; gap: 8px; align-items: center;">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('services', type=service_type, search=search_query, category=category, price_sort=price_sort, condition=condition, page=pagination.prev_num) }}" 
+               style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color); background-color: var(--card-color);">
+                上一页
+            </a>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <span style="padding: 8px 16px; border: 1px solid var(--accent-color); border-radius: 8px; background-color: var(--accent-color); color: white;">
+                        {{ page_num }}
+                    </span>
+                    {% else %}
+                    <a href="{{ url_for('services', type=service_type, search=search_query, category=category, price_sort=price_sort, condition=condition, page=page_num) }}" 
+                       style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color); background-color: var(--card-color);">
+                        {{ page_num }}
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <span style="padding: 8px;">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <a href="{{ url_for('services', type=service_type, search=search_query, category=category, price_sort=price_sort, condition=condition, page=pagination.next_num) }}" 
+               style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color); background-color: var(--card-color);">
+                下一页
+            </a>
+            {% endif %}
+        </nav>
+        <p style="margin-top: 12px; font-size: 12px; color: var(--secondary-color);">
+            共 {{ pagination.total }} 条，第 {{ pagination.page }} / {{ pagination.pages }} 页
+        </p>
+    </div>
+    {% endif %}
+{% endblock %}

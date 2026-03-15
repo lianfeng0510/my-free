@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">ℹ️</span>
+                关于我们
+            </h3>
+        </div>
+        
+        <!-- 平台介绍 -->
+        <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">平台介绍</h4>
+            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--secondary-color); line-height: 1.6;">
+                校园贴吧是一个专为大学生打造的校园社交平台，致力于为学生提供一个交流、分享、互助的线上社区。我们的目标是构建一个温馨、和谐、有活力的校园网络空间，让每一位同学都能在这里找到归属感。
+            </p>
+            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--secondary-color); line-height: 1.6;">
+                平台提供论坛交流、二手交易、跑腿服务、失物招领等多种功能，满足学生在校期间的各种需求。我们希望通过技术的力量，让校园生活更加便捷、丰富多彩。
+            </p>
+        </div>
+        
+        <!-- 发展历程 -->
+        <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">发展历程</h4>
+            
+            <div style="position: relative; padding-left: 32px;">
+                <!-- 时间线 -->
+                <div style="position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background-color: var(--border-color);"></div>
+                
+                <!-- 时间点1 -->
+                <div style="position: relative; margin-bottom: 24px;">
+                    <div style="position: absolute; left: -32px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background-color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">
+                        1
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">2024年9月</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">校园贴吧正式上线，推出论坛交流功能</p>
+                </div>
+                
+                <!-- 时间点2 -->
+                <div style="position: relative; margin-bottom: 24px;">
+                    <div style="position: absolute; left: -32px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background-color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">
+                        2
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">2024年11月</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">推出二手交易和跑腿服务功能</p>
+                </div>
+                
+                <!-- 时间点3 -->
+                <div style="position: relative; margin-bottom: 24px;">
+                    <div style="position: absolute; left: -32px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background-color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">
+                        3
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">2025年3月</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">上线失物招领和校园活动功能</p>
+                </div>
+                
+                <!-- 时间点4 -->
+                <div style="position: relative;">
+                    <div style="position: absolute; left: -32px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background-color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">
+                        4
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">2025年6月</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">推出校园圈子和兴趣社区功能</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 团队介绍 -->
+        <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">团队介绍</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,152,0,0.1); margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                        👨‍💻
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">张小明</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">创始人 & CEO</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(76,175,80,0.1); margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                        👩‍💻
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">李小红</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">技术总监</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(0,123,255,0.1); margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                        🎨
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">王小花</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">设计总监</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(255,99,132,0.1); margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                        📱
+                    </div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">赵小刚</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">产品经理</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 联系我们 -->
+        <div style="margin-bottom: 24px;">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">联系我们</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 16px; width: 24px; text-align: center;">📍</span>
+                    <span style="font-size: 14px; color: var(--secondary-color);">北京市海淀区中关村大街1号</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 16px; width: 24px; text-align: center;">📧</span>
+                    <span style="font-size: 14px; color: var(--secondary-color);">info@campusboard.com</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 16px; width: 24px; text-align: center;">📞</span>
+                    <span style="font-size: 14px; color: var(--secondary-color);">400-123-4567</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 版本信息 -->
+        <div style="text-align: center; padding-top: 24px; border-top: 1px solid var(--border-color);">
+            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">校园贴吧 v1.0.0</p>
+            <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--secondary-color);">© 2025 Campus Board. All rights reserved.</p>
+        </div>
+    </div>
+{% endblock %}

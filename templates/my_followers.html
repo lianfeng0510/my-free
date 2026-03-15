@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">👤</span>
+                我的粉丝
+            </h3>
+        </div>
+        
+        {% if followers %}
+            <div class="user-list">
+                {% for user in followers %}
+                <div class="user-item" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="{{ url_for('static', filename=user.avatar) if user.avatar else url_for('static', filename='images/default_avatar.png') }}" 
+                             alt="{{ user.username }}" 
+                             style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">
+                                <a href="{{ url_for('profile') }}?user_id={{ user.id }}" style="color: inherit; text-decoration: none;">
+                                    {{ user.username }}
+                                </a>
+                            </h4>
+                            <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">
+                                {{ user.bio or '暂无简介' }}
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        {% if current_user.is_following(user) %}
+                            <form action="{{ url_for('unfollow_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-secondary" style="padding: 6px 16px; font-size: 14px;">
+                                    取消关注
+                                </button>
+                            </form>
+                        {% else %}
+                            <form action="{{ url_for('follow_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-primary" style="padding: 6px 16px; font-size: 14px;">
+                                    关注
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 48px 24px; color: var(--secondary-color);">
+                <span style="font-size: 48px; display: block; margin-bottom: 16px;">👤</span>
+                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">暂无粉丝</h4>
+                <p style="margin: 0; font-size: 14px;">发布优质内容，吸引更多粉丝关注</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

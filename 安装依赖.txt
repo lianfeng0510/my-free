@@ -1,0 +1,5 @@
+cd c:\Users\hp\Documents\trae_projects\free
+
+python -m pip install flask flask-sqlalchemy flask-login
+
+python app.py

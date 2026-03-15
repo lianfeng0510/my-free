@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🚨</span>
+                举报
+            </h3>
+        </div>
+        
+        <form method="POST" action="{{ url_for('report') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            {% if reported_user_id %}
+                <input type="hidden" name="reported_user_id" value="{{ reported_user_id }}">
+            {% endif %}
+            {% if reported_post_id %}
+                <input type="hidden" name="reported_post_id" value="{{ reported_post_id }}">
+            {% endif %}
+            {% if reported_comment_id %}
+                <input type="hidden" name="reported_comment_id" value="{{ reported_comment_id }}">
+            {% endif %}
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">举报类型</label>
+                <select name="report_type" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--card-color); color: var(--text-color);">
+                    <option value="">请选择举报类型</option>
+                    <option value="user" {% if reported_user_id %}selected{% endif %}>用户</option>
+                    <option value="post" {% if reported_post_id %}selected{% endif %}>帖子</option>
+                    <option value="comment" {% if reported_comment_id %}selected{% endif %}>评论</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">举报原因</label>
+                <select name="reason" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--card-color); color: var(--text-color);">
+                    <option value="">请选择举报原因</option>
+                    <option value="spam">垃圾广告</option>
+                    <option value="abuse">辱骂骚扰</option>
+                    <option value="porn">色情低俗</option>
+                    <option value="illegal">违法信息</option>
+                    <option value="fraud">欺诈诈骗</option>
+                    <option value="privacy">侵犯隐私</option>
+                    <option value="copyright">侵犯版权</option>
+                    <option value="other">其他原因</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">详细说明（可选）</label>
+                <textarea name="description" rows="4" placeholder="请提供详细说明，帮助我们更好地处理举报..." style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--card-color); color: var(--text-color);"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn btn-primary" style="padding: 12px 24px; background-color: var(--accent-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer; flex: 1;">
+                    提交举报
+                </button>
+                <a href="{{ request.referrer or url_for('home') }}" class="btn btn-secondary" style="padding: 12px 24px; background-color: var(--secondary-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; text-align: center; flex: 1;">
+                    取消
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md);">
+        <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">举报说明</h4>
+        <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--secondary-color); line-height: 1.6;">
+            <li style="margin-bottom: 8px;">请根据实际情况选择举报类型和原因</li>
+            <li style="margin-bottom: 8px;">提供详细说明有助于我们更快处理</li>
+            <li style="margin-bottom: 8px;">我们会在24小时内处理您的举报</li>
+            <li style="margin-bottom: 8px;">恶意举报可能会导致您的账号被封禁</li>
+        </ul>
+    </div>
+{% endblock %}

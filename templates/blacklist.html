@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🚫</span>
+                黑名单管理
+            </h3>
+        </div>
+        
+        {% if blocked_users %}
+            <div class="user-list">
+                {% for user in blocked_users %}
+                <div class="user-item" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="{{ url_for('static', filename=user.avatar) if user.avatar else url_for('static', filename='images/default_avatar.png') }}" 
+                             alt="{{ user.username }}" 
+                             style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">
+                                <a href="{{ url_for('profile') }}?user_id={{ user.id }}" style="color: inherit; text-decoration: none;">
+                                    {{ user.username }}
+                                </a>
+                            </h4>
+                            <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">
+                                {{ user.bio or '暂无简介' }}
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <form action="{{ url_for('unblock_user', user_id=user.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-secondary" style="padding: 6px 16px; font-size: 14px;">
+                                取消屏蔽
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 48px 24px; color: var(--secondary-color);">
+                <span style="font-size: 48px; display: block; margin-bottom: 16px;">🚫</span>
+                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">黑名单为空</h4>
+                <p style="margin: 0; font-size: 14px;">你还没有将任何用户加入黑名单</p>
+            </div>
+        {% endif %}
+        
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">黑名单说明</h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: var(--secondary-color); line-height: 1.6;">
+                <li style="margin-bottom: 8px;">加入黑名单的用户将无法评论你的帖子</li>
+                <li style="margin-bottom: 8px;">加入黑名单的用户将无法发送私信给你</li>
+                <li style="margin-bottom: 8px;">你将不会再看到黑名单用户发布的内容</li>
+                <li style="margin-bottom: 8px;">你可以随时将用户从黑名单中移除</li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}

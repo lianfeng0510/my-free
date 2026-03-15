@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引导页预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f4f4f4;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #ff9800;
+            color: white;
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #f57c00;
+            transform: translateY(-2px);
+        }
+        
+        /* 引导页样式 */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .welcome-content {
+            background-color: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .close-welcome {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+        
+        .close-welcome:hover {
+            color: #333;
+        }
+        
+        .welcome-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .welcome-header h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .welcome-header p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .welcome-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .feature-content h3 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .feature-content p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .welcome-footer {
+            text-align: center;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .welcome-content {
+                padding: 32px 24px;
+                margin: 20px;
+            }
+            
+            .welcome-features {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-item {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 引导页模态框 -->
+    <div id="welcome-modal" class="welcome-modal">
+        <div class="welcome-content">
+            <button id="close-welcome" class="close-welcome">&times;</button>
+            <div class="welcome-header">
+                <div style="font-size: 48px; margin-bottom: 16px;">🎓</div>
+                <h2>欢迎来到校园服务平台</h2>
+                <p>您的校园生活好帮手</p>
+            </div>
+            <div class="welcome-features">
+                <div class="feature-item">
+                    <div class="feature-icon">🚶</div>
+                    <div class="feature-content">
+                        <h3>跑腿服务</h3>
+                        <p>代取快递、代买饭、代打印</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🛍️</div>
+                    <div class="feature-content">
+                        <h3>二手交易</h3>
+                        <p>买卖闲置物品，环保又实惠</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🍔</div>
+                    <div class="feature-content">
+                        <h3>外卖服务</h3>
+                        <p>校园周边美食，一键送达</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔍</div>
+                    <div class="feature-content">
+                        <h3>失物招领</h3>
+                        <p>快速找回遗失物品</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💼</div>
+                    <div class="feature-content">
+                        <h3>兼职招聘</h3>
+                        <p>发布和查看兼职信息</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📚</div>
+                    <div class="feature-content">
+                        <h3>课程资料</h3>
+                        <p>分享学习资料，共同进步</p>
+                    </div>
+                </div>
+            </div>
+            <div class="welcome-footer">
+                <button id="get-started" class="btn">开始使用</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 引导页逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            const welcomeModal = document.getElementById('welcome-modal');
+            const closeWelcome = document.getElementById('close-welcome');
+            const getStarted = document.getElementById('get-started');
+            
+            // 显示引导页
+            welcomeModal.style.display = 'flex';
+            
+            // 关闭按钮点击事件
+            if (closeWelcome) {
+                closeWelcome.addEventListener('click', function() {
+                    welcomeModal.style.display = 'none';
+                });
+            }
+            
+            // 开始使用按钮点击事件
+            if (getStarted) {
+                getStarted.addEventListener('click', function() {
+                    welcomeModal.style.display = 'none';
+                });
+            }
+            
+            // 点击模态框外部关闭
+            if (welcomeModal) {
+                welcomeModal.addEventListener('click', function(e) {
+                    if (e.target === welcomeModal) {
+                        welcomeModal.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

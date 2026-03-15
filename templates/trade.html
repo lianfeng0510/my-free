@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">💰</span>
+                担保交易详情
+            </h3>
+            <span class="badge" style="background-color: {% if trade.trade_status == 'completed' %}var(--success-color){% elif trade.trade_status == 'cancelled' %}var(--danger-color){% else %}var(--warning-color){% endif %}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                {% if trade.trade_status == 'pending' %}待支付
+                {% elif trade.trade_status == 'paid' %}已支付
+                {% elif trade.trade_status == 'shipped' %}已发货
+                {% elif trade.trade_status == 'delivered' %}已收货
+                {% elif trade.trade_status == 'completed' %}已完成
+                {% elif trade.trade_status == 'cancelled' %}已取消
+                {% else %}{{ trade.trade_status }}
+                {% endif %}
+            </span>
+        </div>
+        
+        <!-- 交易基本信息 -->
+        <div style="margin-bottom: 24px; padding: 20px; background-color: rgba(0,0,0,0.02); border-radius: var(--border-radius);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">交易信息</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <div>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--secondary-color);">交易ID</p>
+                    <p style="margin: 0; font-size: 16px; font-weight: 600;">{{ trade.id }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--secondary-color);">交易金额</p>
+                    <p style="margin: 0; font-size: 16px; font-weight: 600; color: var(--accent-color);">¥{{ trade.price }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--secondary-color);">创建时间</p>
+                    <p style="margin: 0; font-size: 14px;">{{ trade.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                <div>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--secondary-color);">担保状态</p>
+                    <p style="margin: 0; font-size: 14px;">{% if trade.escrow_held %}平台担保中{% else %}无担保{% endif %}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 买卖双方信息 -->
+        <div style="margin-bottom: 24px; padding: 20px; background-color: rgba(0,0,0,0.02); border-radius: var(--border-radius);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">买卖双方</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                <div>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--secondary-color);">买家</p>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <img src="{{ url_for('static', filename=trade.buyer.avatar) if trade.buyer.avatar else url_for('static', filename='images/default_avatar.png') }}" 
+                             alt="{{ trade.buyer.username }}" 
+                             style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <p style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">{{ trade.buyer.username }}</p>
+                            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">Lv.{{ trade.buyer.level }}</p>
+                        </div>
+                    </div>
+                    {% if current_user.id != trade.buyer.id %}
+                    <a href="{{ url_for('conversation', user_id=trade.buyer.id) }}" 
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background-color: var(--accent-color); color: white; border-radius: var(--border-radius); text-decoration: none; font-size: 14px; font-weight: 500;">
+                        <span>💬</span>
+                        联系买家
+                    </a>
+                    {% endif %}
+                </div>
+                <div>
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--secondary-color);">卖家</p>
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <img src="{{ url_for('static', filename=trade.seller.avatar) if trade.seller.avatar else url_for('static', filename='images/default_avatar.png') }}" 
+                             alt="{{ trade.seller.username }}" 
+                             style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <p style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">{{ trade.seller.username }}</p>
+                            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">Lv.{{ trade.seller.level }}</p>
+                        </div>
+                    </div>
+                    {% if current_user.id != trade.seller.id %}
+                    <a href="{{ url_for('conversation', user_id=trade.seller.id) }}" 
+                       style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background-color: var(--accent-color); color: white; border-radius: var(--border-radius); text-decoration: none; font-size: 14px; font-weight: 500;">
+                        <span>💬</span>
+                        联系卖家
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 商品信息 -->
+        <div style="margin-bottom: 24px; padding: 20px; background-color: rgba(0,0,0,0.02); border-radius: var(--border-radius);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">商品信息</h4>
+            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                <div style="flex: 1;">
+                    <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">
+                        <a href="{{ url_for('post', post_id=trade.post.id) }}" style="color: inherit; text-decoration: none;">
+                            {{ trade.post.title }}
+                        </a>
+                    </p>
+                    <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">
+                        {{ trade.post.content[:100] }}{% if trade.post.content|length > 100 %}...{% endif %}
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('post', post_id=trade.post.id) }}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px; text-decoration: none;">
+                        查看商品
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 交易进度 -->
+        <div style="margin-bottom: 24px; padding: 20px; background-color: rgba(0,0,0,0.02); border-radius: var(--border-radius);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">交易进度</h4>
+            <div style="display: flex; align-items: center; justify-content: space-between; position: relative; margin-bottom: 20px;">
+                <div style="position: absolute; top: 12px; left: 0; right: 0; height: 2px; background-color: var(--border-color); z-index: 1;"></div>
+                <div style="position: absolute; top: 12px; left: 0; height: 2px; background-color: var(--accent-color); z-index: 2; width: 
+                    {% if trade.trade_status == 'pending' %}0%
+                    {% elif trade.trade_status == 'paid' %}25%
+                    {% elif trade.trade_status == 'shipped' %}50%
+                    {% elif trade.trade_status == 'delivered' %}75%
+                    {% elif trade.trade_status == 'completed' %}100%
+                    {% else %}0%
+                    {% endif %};"></div>
+                
+                <div style="display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative; width: 20%;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background-color: {% if trade.trade_status in ['paid','shipped','delivered','completed'] %}var(--accent-color){% else %}var(--border-color){% endif %}; margin-bottom: 8px;"></div>
+                    <span style="font-size: 12px; color: var(--secondary-color);">待支付</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative; width: 20%;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background-color: {% if trade.trade_status in ['shipped','delivered','completed'] %}var(--accent-color){% else %}var(--border-color){% endif %}; margin-bottom: 8px;"></div>
+                    <span style="font-size: 12px; color: var(--secondary-color);">已支付</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative; width: 20%;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background-color: {% if trade.trade_status in ['delivered','completed'] %}var(--accent-color){% else %}var(--border-color){% endif %}; margin-bottom: 8px;"></div>
+                    <span style="font-size: 12px; color: var(--secondary-color);">已发货</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative; width: 20%;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background-color: {% if trade.trade_status in ['completed'] %}var(--accent-color){% else %}var(--border-color){% endif %}; margin-bottom: 8px;"></div>
+                    <span style="font-size: 12px; color: var(--secondary-color);">已收货</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; z-index: 3; position: relative; width: 20%;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background-color: {% if trade.trade_status in ['completed'] %}var(--accent-color){% else %}var(--border-color){% endif %}; margin-bottom: 8px;"></div>
+                    <span style="font-size: 12px; color: var(--secondary-color);">已完成</span>
+                </div>
+            </div>
+            
+            <!-- 时间线 -->
+            <div style="margin-top: 24px;">
+                <h5 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">时间线</h5>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--success-color);"></div>
+                        <div>
+                            <p style="margin: 0; font-size: 14px; font-weight: 500;">交易创建</p>
+                            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">{{ trade.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    </div>
+                    {% if trade.payment_date %}
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--success-color);"></div>
+                        <div>
+                            <p style="margin: 0; font-size: 14px; font-weight: 500;">买家支付</p>
+                            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">{{ trade.payment_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if trade.shipping_date %}
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--success-color);"></div>
+                        <div>
+                            <p style="margin: 0; font-size: 14px; font-weight: 500;">卖家发货</p>
+                            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">{{ trade.shipping_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if trade.delivery_date %}
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--success-color);"></div>
+                        <div>
+                            <p style="margin: 0; font-size: 14px; font-weight: 500;">买家收货</p>
+                            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">{{ trade.delivery_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if trade.completed_at %}
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--success-color);"></div>
+                        <div>
+                            <p style="margin: 0; font-size: 14px; font-weight: 500;">交易完成</p>
+                            <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">{{ trade.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 校内交易提示 -->
+        <div style="background: linear-gradient(135deg, #e6f7ff 0%, #f0fdff 100%); border: 1px solid #91d5ff; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                <div style="font-size: 32px; color: #1890ff;">🏫</div>
+                <div style="flex: 1;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1890ff;">校内交易小贴士</h4>
+                    <div style="font-size: 14px; color: #666; line-height: 1.5;">
+                        <p style="margin: 0 0 8px 0;">✅ <strong>面对面交易更安全：</strong>建议在图书馆、食堂、宿舍楼等公共场所交易</p>
+                        <p style="margin: 0 0 8px 0;">✅ <strong>现金支付更方便：</strong>校内交易可使用现金，避免线上支付手续费</p>
+                        <p style="margin: 0 0 8px 0;">✅ <strong>验货后再确认：</strong>线下见面时仔细检查商品，满意后再付款</p>
+                        <p style="margin: 0;">✅ <strong>保护个人信息：</strong>交易时注意保护个人隐私和安全</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">操作</h4>
+            {% if trade.trade_status == 'pending' and trade.buyer_id == current_user.id %}
+            <div style="margin-bottom: 12px; padding: 12px; border-radius: 10px; background-color: rgba(0,123,255,0.08); border: 1px solid rgba(0,123,255,0.2);">
+                <form action="{{ url_for('trade.bargain_trade', trade_id=trade.id) }}" method="POST" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <span style="font-size: 13px; color: var(--text-color);">砍价：</span>
+                    <input type="number" name="offer_price" step="0.01" min="0.01" max="{{ trade.price - 0.01 if trade.price > 0.01 else trade.price }}" placeholder="输入报价" style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); width: 140px;">
+                    <button type="submit" class="btn btn-secondary" style="padding: 8px 12px;">发起砍价</button>
+                </form>
+            </div>
+            {% endif %}
+            {% if bargain_offer and trade.seller_id == current_user.id and trade.trade_status == 'pending' %}
+            <div style="margin-bottom: 12px; padding: 12px; border-radius: 10px; background-color: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.2); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 13px;">买家最新砍价：¥{{ bargain_offer.price }}</span>
+                <form action="{{ url_for('trade.accept_bargain_trade', trade_id=trade.id) }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-accent" style="padding: 8px 12px;">同意砍价</button>
+                </form>
+            </div>
+            {% endif %}
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <!-- 线下交易按钮 -->
+                {% if trade.trade_status == 'pending' %}
+                    {% if current_user.id == trade.buyer.id %}
+                        {% set other_user = trade.seller %}
+                    {% else %}
+                        {% set other_user = trade.buyer %}
+                    {% endif %}
+                    <a href="{{ url_for('conversation', user_id=other_user.id, prefill='您好，我想线下交易，方便约个时间和地点吗？') }}" 
+                       style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none;">
+                        <span>🤝</span>
+                        线下交易
+                    </a>
+                {% endif %}
+                
+                {% if trade.trade_status == 'pending' and trade.buyer_id == current_user.id %}
+                <form action="{{ url_for('trade.pay_trade', trade_id=trade.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 24px; background-color: var(--accent-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer;">
+                        模拟支付
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if trade.trade_status == 'paid' and trade.seller_id == current_user.id %}
+                <form action="{{ url_for('trade.ship_trade', trade_id=trade.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 24px; background-color: var(--accent-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer;">
+                        模拟发货
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if trade.trade_status == 'shipped' and trade.buyer_id == current_user.id %}
+                <form action="{{ url_for('trade.deliver_trade', trade_id=trade.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 24px; background-color: var(--accent-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer;">
+                        确认收货
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if trade.trade_status == 'delivered' and trade.seller_id == current_user.id %}
+                <form action="{{ url_for('trade.complete_trade', trade_id=trade.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary" style="padding: 12px 24px; background-color: var(--accent-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer;">
+                        确认收款
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if trade.trade_status not in ['completed', 'cancelled'] %}
+                <form action="{{ url_for('trade.cancel_trade', trade_id=trade.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-secondary" style="padding: 12px 24px; background-color: var(--secondary-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer;">
+                        取消交易
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if trade.trade_status in ['paid', 'shipped'] and trade.buyer_id == current_user.id %}
+                <form action="{{ url_for('trade.request_runner_trade', trade_id=trade.id) }}" method="POST" style="display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" name="pick_up_location" placeholder="取货地点（可选）" style="padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); width: 150px;">
+                    <input type="text" name="delivery_location" placeholder="送达地点（可选）" style="padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); width: 150px;">
+                    <button type="submit" class="btn btn-secondary" style="padding: 10px 14px;">呼叫跑腿（免费）</button>
+                </form>
+                {% endif %}
+                
+                <a href="{{ url_for('post', post_id=trade.post.id) }}" class="btn btn-secondary" style="padding: 12px 24px; background-color: var(--secondary-color); color: white; border: none; border-radius: var(--border-radius); font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none;">
+                    查看商品
+                </a>
+            </div>
+            {% if trade.trade_status == 'completed' and current_user.id in [trade.buyer_id, trade.seller_id] %}
+            <form action="{{ url_for('trade.review_trade', trade_id=trade.id) }}" method="POST" style="margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="score" required style="padding: 8px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <option value="">评分</option>
+                    <option value="5">5分</option>
+                    <option value="4">4分</option>
+                    <option value="3">3分</option>
+                    <option value="2">2分</option>
+                    <option value="1">1分</option>
+                </select>
+                <input type="text" name="content" required maxlength="100" placeholder="写一句交易评价" style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); min-width: 220px;">
+                <button type="submit" class="btn btn-accent">提交互评</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

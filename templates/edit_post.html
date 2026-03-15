@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>编辑帖子</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <div>
+            <label for="board_id">选择贴吧</label>
+            <select id="board_id" name="board_id" required>
+                {% for board in boards %}
+                <option value="{{ board.id }}" {% if post.board_id == board.id %}selected{% endif %}>{{ board.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="title">标题</label>
+            <input type="text" id="title" name="title" value="{{ post.title }}" required>
+        </div>
+        <div>
+            <label for="content">内容</label>
+            <textarea id="content" name="content" required rows="8">{{ post.content }}</textarea>
+        </div>
+        
+        <div>
+            <label for="images">上传图片 (可选)</label>
+            <input type="file" id="images" name="images" multiple accept="image/*">
+            <p style="font-size: 12px; color: var(--secondary-color); margin-top: 4px;">支持上传多张图片，格式为 png, jpg, jpeg, gif</p>
+        </div>
+        
+        {% if post.images %}
+        <div>
+            <label>已上传图片</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                {% for image in post.images.split(',') %}
+                <div style="width: 100px; height: 100px; overflow: hidden; border-radius: 4px;">
+                    <img src="{{ url_for('static', filename=image) }}" alt="Post image" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% endfor %}
+            </div>
+            <p style="font-size: 12px; color: var(--secondary-color); margin-top: 4px;">重新上传图片将替换原有图片</p>
+        </div>
+        {% endif %}
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-success">保存更改</button>
+            <a href="{{ url_for('post', post_id=post.id) }}" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+{% endblock %}

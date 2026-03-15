@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">💰</span>
+                收益提现
+            </h3>
+        </div>
+        
+        <!-- 收益概览 -->
+        <div style="background-color: rgba(76,175,80,0.05); border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(76,175,80,0.1);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">收益概览</h4>
+            <div style="display: flex; justify-content: space-around; align-items: center;">
+                <div style="text-align: center;">
+                    <p style="margin: 0 0 4px 0; font-size: 14px; color: var(--secondary-color);">待提现收益</p>
+                    <h5 style="margin: 0; font-size: 24px; font-weight: 600; color: var(--success-color);">¥0.00</h5>
+                </div>
+                <div style="text-align: center;">
+                    <p style="margin: 0 0 4px 0; font-size: 14px; color: var(--secondary-color);">已提现收益</p>
+                    <h5 style="margin: 0; font-size: 24px; font-weight: 600; color: var(--text-color);">¥0.00</h5>
+                </div>
+                <div style="text-align: center;">
+                    <p style="margin: 0 0 4px 0; font-size: 14px; color: var(--secondary-color);">总收益</p>
+                    <h5 style="margin: 0; font-size: 24px; font-weight: 600; color: var(--accent-color);">¥0.00</h5>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 提现表单 -->
+        <div style="margin-bottom: 24px;">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">提现</h4>
+            <form style="background-color: rgba(0,0,0,0.02); border-radius: 12px; padding: 20px; border: 1px solid rgba(0,0,0,0.05);">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-color);">提现金额</label>
+                    <input type="number" placeholder="请输入提现金额" min="1" step="0.01" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-color);">提现方式</label>
+                    <select style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                        <option value="alipay">支付宝</option>
+                        <option value="wechat">微信</option>
+                        <option value="bank">银行卡</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-color);">提现账号</label>
+                    <input type="text" placeholder="请输入提现账号" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%; font-size: 14px; padding: 12px;">
+                    提交提现
+                </button>
+            </form>
+        </div>
+        
+        <!-- 提现记录 -->
+        <div>
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">提现记录</h4>
+            <div style="text-align: center; padding: 48px 24px; color: var(--secondary-color);">
+                <span style="font-size: 48px; display: block; margin-bottom: 16px;">📋</span>
+                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">暂无提现记录</h4>
+                <p style="margin: 0; font-size: 14px;">累计收益达到10元后可申请提现</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

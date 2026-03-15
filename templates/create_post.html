@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        .create-post-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .create-post-form {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+        }
+        @media (max-width: 480px) {
+            .create-post-container {
+                padding: 12px;
+            }
+            .create-post-form {
+                padding: 16px;
+            }
+            /* Make form inputs easier to tap */
+            input, select, textarea {
+                font-size: 16px !important; /* Prevent zoom */
+                min-height: 48px; /* Larger touch target */
+            }
+            label {
+                margin-bottom: 8px;
+                display: block;
+            }
+        }
+    </style>
+    <div class="create-post-container">
+        <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 24px; text-align: center;">发布新帖子</h2>
+        <form method="POST" enctype="multipart/form-data" class="create-post-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- 基本信息 -->
+            <div style="margin-bottom: 16px;">
+                <label for="board_id" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">选择贴吧</label>
+                <select id="board_id" name="board_id" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background-color: white;">
+                    {% for board in boards %}
+                    <option value="{{ board.id }}">{{ board.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label for="circle_id" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">选择圈子 (可选)</label>
+                <select id="circle_id" name="circle_id" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background-color: white;">
+                    <option value="">不选择圈子</option>
+                    {% for circle in circles %}
+                    <option value="{{ circle.id }}">{{ circle.name }} ({{ circle.circle_type }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label for="post_type" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">帖子类型</label>
+                <select id="post_type" name="post_type" required onchange="showServiceFields()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background-color: white;">
+                    <option value="normal">普通帖子</option>
+                    <option value="second_hand">二手交易</option>
+                    <option value="runner">跑腿服务</option>
+                    <option value="lost_found">失物招领</option>
+                    <option value="part_time">兼职招聘</option>
+                    <option value="course">课程学习</option>
+                    <option value="activity">社团活动</option>
+                    <option value="notification">校园通知</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label for="title" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">标题</label>
+                <input type="text" id="title" name="title" required placeholder="请输入帖子标题" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label for="content" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">内容</label>
+                <textarea id="content" name="content" required rows="8" placeholder="请输入帖子内容" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label for="images" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">上传图片 (可选)</label>
+                <input type="file" id="images" name="images" multiple accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                <p style="font-size: 12px; color: var(--secondary-color); margin-top: 4px;">支持上传多张图片，格式为 png, jpg, jpeg, gif</p>
+            </div>
+            
+            <!-- 服务相关字段 -->
+            <div id="service-fields" style="margin-top: 24px; padding: 20px; background-color: rgba(0,0,0,0.02); border-radius: 12px; border: 1px solid var(--border-color);">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text-color);">服务信息</h3>
+                
+                <!-- 二手交易字段 -->
+                <div id="second_hand_fields" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <label for="price" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">价格 (元)</label>
+                        <input type="number" id="price" name="price" step="0.01" placeholder="请输入价格" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="location" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">交易地点</label>
+                        <input type="text" id="location" name="location" placeholder="请输入交易地点" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="contact_info" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">联系方式</label>
+                        <input type="text" id="contact_info" name="contact_info" placeholder="请输入联系方式" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- 跑腿服务字段 -->
+                <div id="runner_fields" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <label for="price" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">小费金额 (元)</label>
+                        <input type="number" id="price" name="price" step="0.01" placeholder="请输入小费金额" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="location" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">服务地点</label>
+                        <input type="text" id="location" name="location" placeholder="如：菜鸟驿站 → 3号楼215" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="contact_info" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">联系方式</label>
+                        <input type="text" id="contact_info" name="contact_info" placeholder="请输入联系方式" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- 失物招领字段 -->
+                <div id="lost_found_fields" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <label for="location" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">丢失/捡到地点</label>
+                        <input type="text" id="location" name="location" placeholder="请输入地点" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="contact_info" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">联系方式</label>
+                        <input type="text" id="contact_info" name="contact_info" placeholder="请输入联系方式" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- 兼职招聘字段 -->
+                <div id="part_time_fields" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <label for="price" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">薪资 (元)</label>
+                        <input type="number" id="price" name="price" step="0.01" placeholder="请输入薪资" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="location" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">工作地点</label>
+                        <input type="text" id="location" name="location" placeholder="请输入工作地点" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="contact_info" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">联系方式</label>
+                        <input type="text" id="contact_info" name="contact_info" placeholder="请输入联系方式" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- 课程学习字段 -->
+                <div id="course_fields" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <label for="location" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">课程名称</label>
+                        <input type="text" id="location" name="location" placeholder="请输入课程名称" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="contact_info" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">教师/助教联系方式</label>
+                        <input type="text" id="contact_info" name="contact_info" placeholder="请输入联系方式" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- 社团活动字段 -->
+                <div id="activity_fields" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <label for="location" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">活动地点</label>
+                        <input type="text" id="location" name="location" placeholder="请输入活动地点" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="contact_info" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">联系方式</label>
+                        <input type="text" id="contact_info" name="contact_info" placeholder="请输入联系方式" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- 校园通知字段 -->
+                <div id="notification_fields" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <label for="contact_info" style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text-color);">发布单位</label>
+                        <input type="text" id="contact_info" name="contact_info" placeholder="请输入发布单位" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 其他选项 -->
+            <div style="margin-top: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-color);">
+                    <input type="checkbox" name="is_anonymous" style="width: 16px; height: 16px;"> 匿名发布
+                </label>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-accent" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 600;">发布</button>
+                <a href="{{ url_for('home') }}" class="btn btn-secondary" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 600; text-align: center; text-decoration: none;">取消</a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // 从URL获取type参数并设置表单
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postType = urlParams.get('type');
+            if (postType) {
+                const selectElement = document.getElementById('post_type');
+                for (let i = 0; i < selectElement.options.length; i++) {
+                    if (selectElement.options[i].value === postType) {
+                        selectElement.selectedIndex = i;
+                        break;
+                    }
+                }
+                showServiceFields();
+            }
+        });
+        
+        function showServiceFields() {
+            const postType = document.getElementById('post_type').value;
+            const serviceFields = document.getElementById('service-fields');
+            
+            // 隐藏所有服务字段
+            document.getElementById('second_hand_fields').style.display = 'none';
+            document.getElementById('runner_fields').style.display = 'none';
+            document.getElementById('lost_found_fields').style.display = 'none';
+            document.getElementById('part_time_fields').style.display = 'none';
+            document.getElementById('course_fields').style.display = 'none';
+            document.getElementById('activity_fields').style.display = 'none';
+            document.getElementById('notification_fields').style.display = 'none';
+            
+            // 显示对应的服务字段
+            if (postType !== 'normal') {
+                serviceFields.style.display = 'block';
+                document.getElementById(postType + '_fields').style.display = 'block';
+            } else {
+                serviceFields.style.display = 'none';
+            }
+        }
+        
+        // 初始调用
+        showServiceFields();
+    </script>
+{% endblock %}

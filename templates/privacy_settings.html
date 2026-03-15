@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🔒</span>
+                隐私设置
+            </h3>
+        </div>
+        
+        <form method="POST" style="margin-bottom: 24px;">
+            {{ csrf_token() }}
+            <!-- 个人信息可见性 -->
+            <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+                <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">个人信息可见性</h4>
+                
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">公开个人资料</p>
+                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">允许其他用户查看你的个人资料</p>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                        <input type="checkbox" name="public_profile" {% if settings.public_profile %}checked{% endif %} style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
+                        <span style="position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                    </label>
+                </div>
+                
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">显示我的在线状态</p>
+                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">向其他用户显示你是否在线</p>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                        <input type="checkbox" name="show_online_status" {% if settings.show_online_status %}checked{% endif %} style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
+                        <span style="position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                    </label>
+                </div>
+                
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">允许陌生人私信</p>
+                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">允许未关注你的用户发送私信</p>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                        <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
+                        <span style="position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 内容偏好 -->
+            <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+                <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">内容偏好</h4>
+                
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">推荐我关注的内容</p>
+                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">基于你的关注推荐相关内容</p>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                        <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
+                        <span style="position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                    </label>
+                </div>
+                
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">接收系统通知</p>
+                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">接收平台系统通知和活动消息</p>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 48px; height: 24px;">
+                        <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
+                        <span style="position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 数据管理 -->
+            <div style="margin-bottom: 24px;">
+                <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">数据管理</h4>
+                
+                <div style="margin-bottom: 16px;">
+                    <button type="button" class="btn btn-secondary" style="width: 100%; font-size: 14px; padding: 12px; margin-bottom: 8px;">
+                        导出个人数据
+                    </button>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color); text-align: center;">导出你的所有个人数据，包括帖子、评论和收藏</p>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <button type="button" class="btn btn-danger" style="width: 100%; font-size: 14px; padding: 12px; margin-bottom: 8px;">
+                        注销账号
+                    </button>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color); text-align: center;">注销账号将删除所有个人数据，此操作不可恢复</p>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 12px;">
+                保存设置
+            </button>
+        </form>
+    </div>
+{% endblock %}

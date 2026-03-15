@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">💰</span>
+                交易管理面板
+            </h3>
+            <div>
+                <span class="badge" style="background-color: var(--secondary-color); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                    共 {{ trades|length }} 笔交易
+                </span>
+            </div>
+        </div>
+        
+        {% if trades %}
+            <div class="trades-list">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color);">
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">交易ID</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">商品</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">买家</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">卖家</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">价格</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">状态</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">创建时间</th>
+                            <th style="padding: 12px; text-align: left; font-size: 14px; font-weight: 600; color: var(--text-color);">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trade in trades %}
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px; font-size: 14px; font-weight: 600; color: var(--text-color);">#{{ trade.id }}</td>
+                            <td style="padding: 12px;">
+                                <a href="{{ url_for('post', post_id=trade.post.id) }}" style="color: var(--accent-color); text-decoration: none; font-size: 14px;">
+                                    {{ trade.post.title[:20] }}{% if trade.post.title|length > 20 %}...{% endif %}
+                                </a>
+                            </td>
+                            <td style="padding: 12px;">
+                                <a href="{{ url_for('profile') }}?user_id={{ trade.buyer.id }}" style="color: var(--accent-color); text-decoration: none; font-size: 14px;">
+                                    {{ trade.buyer.username }}
+                                </a>
+                            </td>
+                            <td style="padding: 12px;">
+                                <a href="{{ url_for('profile') }}?user_id={{ trade.seller.id }}" style="color: var(--accent-color); text-decoration: none; font-size: 14px;">
+                                    {{ trade.seller.username }}
+                                </a>
+                            </td>
+                            <td style="padding: 12px; font-size: 14px; font-weight: 600; color: var(--accent-color);">¥{{ trade.price }}</td>
+                            <td style="padding: 12px;">
+                                <span class="badge" style="background-color: {% if trade.trade_status == 'completed' %}var(--success-color){% elif trade.trade_status == 'cancelled' %}var(--danger-color){% elif trade.trade_status in ['pending', 'payment_pending'] %}var(--warning-color){% elif trade.trade_status in ['paid', 'shipped', 'delivered'] %}var(--info-color){% else %}var(--secondary-color){% endif %}; color: white; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 600;">
+                                    {% if trade.trade_status == 'pending' %}待支付
+                                    {% elif trade.trade_status == 'payment_pending' %}待支付
+                                    {% elif trade.trade_status == 'paid' %}已支付
+                                    {% elif trade.trade_status == 'shipped' %}已发货
+                                    {% elif trade.trade_status == 'delivered' %}已收货
+                                    {% elif trade.trade_status == 'completed' %}已完成
+                                    {% elif trade.trade_status == 'cancelled' %}已取消
+                                    {% else %}{{ trade.trade_status }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td style="padding: 12px; font-size: 12px; color: var(--secondary-color);">{{ trade.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td style="padding: 12px;">
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{{ url_for('view_trade', trade_id=trade.id) }}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px; text-decoration: none;">详情</a>
+                                    {% if trade.trade_status in ['pending', 'payment_pending', 'paid', 'shipped', 'delivered'] %}
+                                    <button type="button" class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="showCancelForm({{ trade.id }})">取消</button>
+                                    <button type="button" class="btn btn-success" style="padding: 4px 8px; font-size: 12px;" onclick="showResolveForm({{ trade.id }})">强制完成</button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- 取消交易表单 (隐藏) -->
+                        <tr id="cancel-form-{{ trade.id }}" style="display: none; background-color: rgba(220,53,69,0.05);">
+                            <td colspan="8" style="padding: 16px;">
+                                <form action="{{ url_for('admin_cancel_trade', trade_id=trade.id) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div style="display: flex; gap: 12px; align-items: flex-end;">
+                                        <div style="flex: 1;">
+                                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-color);">取消原因</label>
+                                            <textarea name="dispute_reason" rows="2" placeholder="填写取消原因..." required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--card-color); color: var(--text-color); font-size: 14px;"></textarea>
+                                        </div>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button type="submit" class="btn btn-danger" style="padding: 8px 16px; font-size: 14px;">确认取消</button>
+                                            <button type="button" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;" onclick="hideCancelForm({{ trade.id }})">取消</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                        <!-- 强制完成表单 (隐藏) -->
+                        <tr id="resolve-form-{{ trade.id }}" style="display: none; background-color: rgba(40,167,69,0.05);">
+                            <td colspan="8" style="padding: 16px;">
+                                <form action="{{ url_for('admin_resolve_trade', trade_id=trade.id) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div style="display: flex; gap: 12px; align-items: flex-end;">
+                                        <div style="flex: 1;">
+                                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-color);">处理说明</label>
+                                            <textarea name="resolution_notes" rows="2" placeholder="填写处理说明..." required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); background-color: var(--card-color); color: var(--text-color); font-size: 14px;"></textarea>
+                                        </div>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button type="submit" class="btn btn-success" style="padding: 8px 16px; font-size: 14px;">确认完成</button>
+                                            <button type="button" class="btn btn-secondary" style="padding: 8px 16px; font-size: 14px;" onclick="hideResolveForm({{ trade.id }})">取消</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 48px 24px; color: var(--secondary-color);">
+                <span style="font-size: 48px; display: block; margin-bottom: 16px;">💰</span>
+                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">暂无交易</h4>
+                <p style="margin: 0; font-size: 14px;">当前没有交易记录</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        function showCancelForm(tradeId) {
+            document.getElementById('cancel-form-' + tradeId).style.display = 'table-row';
+            document.getElementById('resolve-form-' + tradeId).style.display = 'none';
+        }
+        
+        function hideCancelForm(tradeId) {
+            document.getElementById('cancel-form-' + tradeId).style.display = 'none';
+        }
+        
+        function showResolveForm(tradeId) {
+            document.getElementById('resolve-form-' + tradeId).style.display = 'table-row';
+            document.getElementById('cancel-form-' + tradeId).style.display = 'none';
+        }
+        
+        function hideResolveForm(tradeId) {
+            document.getElementById('resolve-form-' + tradeId).style.display = 'none';
+        }
+    </script>
+{% endblock %}

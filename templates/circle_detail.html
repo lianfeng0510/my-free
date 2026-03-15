@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        .circle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .circle-stats-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--secondary-color);
+            margin-bottom: 6px;
+        }
+        .top-members-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+        
+        @media (max-width: 480px) {
+            .circle-header {
+                flex-direction: column;
+            }
+            .circle-header > div {
+                width: 100%;
+            }
+            .circle-header .btn {
+                width: 100%;
+                margin-top: 4px;
+            }
+            .top-members-grid {
+                grid-template-columns: 1fr;
+            }
+            /* Adjust padding for mobile cards */
+            .mb-4 {
+                padding: 12px !important;
+            }
+            /* Admin forms stacking */
+            form[action*="set_circle_admin"] {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 8px;
+            }
+            form[action*="update_circle_admin_permission"] {
+                grid-template-columns: 1fr !important;
+            }
+            form[action*="update_circle_admin_permission"] button {
+                grid-column: span 1 !important;
+            }
+        }
+    </style>
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-md);">
+        <div class="circle-header">
+            <div>
+                <h2 style="margin: 0 0 8px 0;">{{ circle_meta.icon if circle_meta else '🌟' }} {{ circle.name }}</h2>
+                <p style="margin: 0; color: var(--secondary-color);">{{ circle.description }}</p>
+                <div style="margin-top: 8px; font-size: 12px; color: var(--secondary-color);">
+                    Lv.{{ circle_meta.level if circle_meta else 1 }} · 成员 {{ circle.members.count() }} · 管理员 {{ admins|length }}/{{ admin_limit }}
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                {% if is_member %}
+                <form action="{{ url_for('circle_checkin', circle_id=circle.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-accent">圈子签到</button>
+                </form>
+                {% if not is_creator %}
+                <form action="{{ url_for('leave_circle', circle_id=circle.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-secondary">退出圈子</button>
+                </form>
+                {% endif %}
+                {% else %}
+                <form action="{{ url_for('join_circle', circle_id=circle.id) }}" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-accent">加入圈子</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% if member_stats %}
+        <div style="margin-top: 10px; padding: 10px; background-color: rgba(0,0,0,0.03); border-radius: 10px; font-size: 13px;">
+            我的圈子等级：Lv.{{ member_stats.level }}（{{ member_badge }}） · 圈子经验：{{ member_stats.exp }} · 累计签到：{{ member_stats.checkin_days }} 天 · 连续签到：{{ current_streak }} 天 · 补签卡：{{ member_card_balance }} 张
+        </div>
+        <div style="margin-top: 8px; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; background-color: rgba(0,0,0,0.01);">
+            <div class="circle-stats-row">
+                <span>升级进度 Lv.{{ member_level_progress.current_level }} → Lv.{{ member_level_progress.next_level }}</span>
+                <span>{{ member_level_progress.current_exp }}/{{ member_level_progress.target_exp }}</span>
+            </div>
+            <div style="height: 8px; background-color: rgba(0,0,0,0.08); border-radius: 999px; overflow: hidden;">
+                <div style="height: 100%; width: {{ member_level_progress.progress_percent }}%; background: linear-gradient(90deg, var(--accent-color), #ffb74d);"></div>
+            </div>
+        </div>
+        {% else %}
+        <div style="margin-top: 10px; padding: 10px; border: 1px dashed var(--border-color); border-radius: 10px; font-size: 12px; color: var(--secondary-color);">
+            升级进度：加入圈子后可查看个人成长进度、补签卡库存和连签奖励。
+        </div>
+        {% endif %}
+        <div style="margin-top: 10px; padding: 10px 12px; background-color: rgba(255,152,0,0.08); border-radius: 10px; font-size: 12px; color: var(--secondary-color); display: grid; gap: 4px;">
+            <div>等级解锁：发帖最多 {{ circle_unlocks.max_post_images }} 图 · 评论最多 {{ circle_unlocks.max_comment_images }} 图</div>
+            <div>管理能力：{{ '支持置顶' if circle_unlocks.pin_post else '未解锁置顶' }} · {{ '支持精华' if circle_unlocks.feature_post else '未解锁精华' }}</div>
+            <div>补签能力：近 {{ circle_unlocks.checkin_repair_days }} 天 · 本月已用 {{ monthly_repairs_used if is_member else 0 }} 次</div>
+        </div>
+    </div>
+
+    {% if is_member %}
+    <div id="circle-publish" class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-md);">
+        <h3 style="margin: 0 0 12px 0;">在圈子发帖（1楼）</h3>
+        <form method="POST" action="{{ url_for('create_circle_post', circle_id=circle.id) }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 10px;">
+                <input type="text" name="title" required maxlength="100" placeholder="输入帖子标题" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+            </div>
+            <div style="margin-bottom: 10px;">
+                <textarea name="content" required rows="4" maxlength="5000" placeholder="分享观点、问题或日常（支持 emoji 😊🎉）" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;"></textarea>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                <button type="button" class="btn btn-secondary emoji-insert" data-emoji="😊">😊</button>
+                <button type="button" class="btn btn-secondary emoji-insert" data-emoji="🎉">🎉</button>
+                <button type="button" class="btn btn-secondary emoji-insert" data-emoji="👍">👍</button>
+                <button type="button" class="btn btn-secondary emoji-insert" data-emoji="🔥">🔥</button>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <input type="file" name="images" accept="image/*" multiple style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px;">
+            </div>
+            <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 10px;">当前等级最多上传 {{ circle_unlocks.max_post_images }} 张图片</div>
+            <button type="submit" class="btn btn-accent">发布到圈子</button>
+        </form>
+    </div>
+
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-md);">
+        <h3 style="margin: 0 0 12px 0;">补签中心</h3>
+        {% if circle_unlocks.checkin_repair_days > 0 %}
+        <form method="POST" action="{{ url_for('repair_circle_checkin', circle_id=circle.id) }}" style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin: 0;">
+                <label style="margin-bottom: 6px;">选择补签日期</label>
+                <input type="date" name="repair_date" required max="{{ repair_max_date }}">
+            </div>
+            <button type="submit" class="btn btn-secondary" style="padding: 10px 14px;">补签</button>
+        </form>
+        <div style="font-size: 12px; color: var(--secondary-color);">可补近 {{ circle_unlocks.checkin_repair_days }} 天，每次补签消耗 1 张补签卡与少量经验。</div>
+        {% else %}
+        <div style="font-size: 13px; color: var(--secondary-color);">圈子达到 Lv.3 后开放补签玩法。</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if is_member %}
+    <a href="#circle-publish" style="position: fixed; right: 18px; bottom: 94px; width: 52px; height: 52px; border-radius: 50%; background-color: var(--accent-color); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: var(--shadow-lg); z-index: 20;">+</a>
+    {% endif %}
+
+    {% if not is_member %}
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-md);">
+        <h3 style="margin: 0 0 10px 0;">补签中心</h3>
+        <div style="font-size: 13px; color: var(--secondary-color);">加入圈子后可使用补签玩法，当前圈子支持补签近 {{ circle_unlocks.checkin_repair_days }} 天。</div>
+    </div>
+    {% endif %}
+
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-md);">
+        <h3 style="margin: 0 0 10px 0;">圈子活跃榜</h3>
+        {% if top_members %}
+        <div class="top-members-grid">
+            {% for item in top_members %}
+            <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px;">
+                <span>{{ item.item.user.username }} · Lv.{{ item.item.level }} · {{ item.badge }}</span>
+                <span style="color: var(--secondary-color);">{{ item.item.exp }} 经验</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if is_creator %}
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-md);">
+        <h3 style="margin: 0 0 10px 0;">圈主管理员设置</h3>
+        <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 10px;">当前最多可设置 {{ admin_limit }} 位管理员，支持分权配置。</div>
+        <div style="display: grid; gap: 8px;">
+            {% for member in circle.members %}
+            {% if member.id != circle.creator_id %}
+            <form method="POST" action="{{ url_for('set_circle_admin', circle_id=circle.id, user_id=member.id) }}" style="display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; margin-bottom: 6px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <span>{{ member.username }}</span>
+                <button type="submit" class="btn btn-secondary" style="padding: 6px 10px;">{{ '取消管理员' if member in admins else '设为管理员' }}</button>
+            </form>
+            {% if member in admins %}
+            {% set permissions = admin_permissions.get(member.id, {}) %}
+            <form method="POST" action="{{ url_for('update_circle_admin_permission', circle_id=circle.id, user_id=member.id) }}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; border: 1px dashed var(--border-color); border-radius: 8px; padding: 8px 10px; margin-bottom: 10px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 0;"><input type="checkbox" name="can_manage_posts" {% if permissions.get('can_manage_posts') %}checked{% endif %}> 管理帖子</label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 0;"><input type="checkbox" name="can_manage_comments" {% if permissions.get('can_manage_comments') %}checked{% endif %}> 管理评论</label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 0;"><input type="checkbox" name="can_pin_posts" {% if permissions.get('can_pin_posts') %}checked{% endif %} {% if not circle_unlocks.pin_post %}disabled{% endif %}> 置顶帖子</label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 0;"><input type="checkbox" name="can_feature_posts" {% if permissions.get('can_feature_posts') %}checked{% endif %} {% if not circle_unlocks.feature_post %}disabled{% endif %}> 加精帖子</label>
+                <button type="submit" class="btn btn-accent" style="grid-column: span 2; padding: 8px 10px;">保存权限</button>
+            </form>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if can_view_logs %}
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-md);">
+        <h3 style="margin: 0 0 10px 0;">圈务日志</h3>
+        {% if recent_logs %}
+        <div style="display: grid; gap: 8px;">
+            {% for log in recent_logs %}
+            <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 10px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-weight: 600; color: var(--text-color);">{{ log.action_type }}</span>
+                    <span style="color: var(--secondary-color);">{{ log.created_at.strftime('%m-%d %H:%M') }}</span>
+                </div>
+                <div style="color: var(--secondary-color);">{{ log.actor.username if log.actor else '系统' }} · {{ log.action_detail or '执行圈务操作' }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="font-size: 13px; color: var(--secondary-color);">暂无圈务日志。</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if posts %}
+        <div class="post-list">
+            {% for post in posts %}
+                <div class="post {% if post.is_sticky %}sticky{% endif %}">
+                    <!-- 帖子标签 -->
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        {% if post.is_sticky %}
+                        <span class="board-tag" style="background-color: var(--accent-color); color: white;">置顶</span>
+                        {% endif %}
+                        {% if post.is_essence %}
+                        <span class="board-tag" style="background-color: var(--success-color); color: white;">精华</span>
+                        {% endif %}
+                        {% if post.is_anonymous %}
+                        <span class="board-tag" style="background-color: var(--secondary-color); color: white;">匿名</span>
+                        {% endif %}
+                        <span class="board-tag">{{ post.board.name }}</span>
+                        {% if post.circle %}
+                        <span class="board-tag" style="background-color: rgba(0,123,255,0.1); color: #007bff;">{{ post.circle.name }}</span>
+                        {% endif %}
+                        <!-- 帖子类型标签 -->
+                        {% if post.post_type != 'normal' %}
+                        {% set type_map = {
+                            'second_hand': '二手交易',
+                            'food': '外卖跑腿',
+                            'lost_found': '失物招领',
+                            'part_time': '兼职招聘',
+                            'course': '课程学习',
+                            'activity': '社团活动',
+                            'notification': '校园通知'
+                        } %}
+                        <span class="board-tag" style="background-color: rgba(255,99,132,0.1); color: #dc3545;">{{ type_map.get(post.post_type, '其他') }}</span>
+                        {% endif %}
+                        <!-- 帖子状态标签 -->
+                        {% if post.status != 'active' %}
+                        {% set status_map = {
+                            'trading': '交易中',
+                            'sold': '已出',
+                            'resolved': '已解决',
+                            'closed': '已关闭'
+                        } %}
+                        <span class="board-tag" style="background-color: rgba(108,117,125,0.1); color: #6c757d;">{{ status_map.get(post.status, '其他') }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h2><a href="{{ url_for('post', post_id=post.id) }}">{{ post.title }}</a></h2>
+                    <div class="meta" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        {% if post.is_anonymous %}
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #666;">
+                                ?
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-color);">匿名用户</div>
+                                <div style="font-size: 12px; color: var(--secondary-color);">隐藏身份</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background-color: #f0f0f0;">
+                                <img src="{{ resolve_avatar_url(post.author) }}" 
+                                     alt="{{ post.author.username }}" 
+                                     style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-color);">{{ post.author.username }}</div>
+                                <div style="font-size: 12px; color: var(--secondary-color);">Lv.{{ post.author.level }} • {{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="content">{{ post.content[:120] }}{% if post.content|length > 120 %}...{% endif %}</div>
+                    
+                    <!-- 服务相关信息 -->
+                    {% if post.post_type == 'second_hand' and post.price %}
+                    <div class="mt-2 p-2" style="background-color: rgba(0,0,0,0.02); border-radius: 4px;">
+                        <span style="font-weight: 600; color: var(--danger-color);">价格: ¥{{ post.price }}</span>
+                        {% if post.location %}
+                        <span style="margin-left: var(--spacing-md);">位置: {{ post.location }}</span>
+                        {% endif %}
+                    </div>
+                    {% elif post.post_type == 'food' %}
+                    <div class="mt-2 p-2" style="background-color: rgba(0,0,0,0.02); border-radius: 4px;">
+                        {% if post.price %}
+                        <span style="font-weight: 600; color: var(--danger-color);">价格: ¥{{ post.price }}</span>
+                        {% endif %}
+                        {% if post.location %}
+                        <span style="margin-left: var(--spacing-md);">位置: {{ post.location }}</span>
+                        {% endif %}
+                    </div>
+                    {% elif post.post_type == 'lost_found' %}
+                    <div class="mt-2 p-2" style="background-color: rgba(0,0,0,0.02); border-radius: 4px;">
+                        {% if post.location %}
+                        <span style="font-weight: 600;">地点: {{ post.location }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="stats">
+                        <span>浏览: {{ post.views }}</span>
+                        <span>评论: {{ post.comment_count }}</span>
+                        <span>点赞: {{ post.like_count }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        </div>
+        {% if pagination and pagination.pages > 1 %}
+        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 14px;">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('circle_detail', circle_id=circle.id, page=pagination.prev_num) }}" class="btn btn-secondary">上一页</a>
+            {% endif %}
+            <span style="padding: 8px 10px; font-size: 12px;">{{ pagination.page }}/{{ pagination.pages }}</span>
+            {% if pagination.has_next %}
+            <a href="{{ url_for('circle_detail', circle_id=circle.id, page=pagination.next_num) }}" class="btn btn-secondary">下一页</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="post">
+            <p class="text-center py-8">圈子内暂无帖子</p>
+            {% if current_user.is_authenticated %}
+            <div class="text-center">
+                {% if is_member %}
+                <a href="{{ url_for('new_post') }}?circle_id={{ circle.id }}" class="btn btn-accent">发布帖子</a>
+                {% else %}
+                <form action="{{ url_for('join_circle', circle_id=circle.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-accent">加入圈子后发帖</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('textarea[name="content"]');
+            if (!textarea) return;
+            document.querySelectorAll('.emoji-insert').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    textarea.value += this.dataset.emoji;
+                    textarea.focus();
+                });
+            });
+        });
+    </script>
+{% endblock %}

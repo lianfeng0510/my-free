@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="post">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+        <div>
+            <h2 style="margin: 0 0 4px 0;">{{ order.title }}</h2>
+            <span style="font-size: 12px; color: var(--secondary-color);">订单号：{{ order.order_number }}</span>
+        </div>
+        <span style="
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            {% if order.status == 'pending' %}
+                background-color: #fff3cd;
+                color: #856404;
+            {% elif order.status == 'accepted' %}
+                background-color: #d1ecf1;
+                color: #0c5460;
+            {% elif order.status == 'in_progress' %}
+                background-color: #cce5ff;
+                color: #004085;
+            {% elif order.status == 'completed' %}
+                background-color: #d4edda;
+                color: #155724;
+            {% elif order.status == 'cancelled' %}
+                background-color: #f8d7da;
+                color: #721c24;
+            {% endif %}
+        ">
+            {% if order.status == 'pending' %}
+                待接单
+            {% elif order.status == 'accepted' %}
+                已接单
+            {% elif order.status == 'in_progress' %}
+                配送中
+            {% elif order.status == 'completed' %}
+                已完成
+            {% elif order.status == 'cancelled' %}
+                已取消
+            {% endif %}
+        </span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; padding: 16px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+        <div>
+            <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 4px;">服务类型</div>
+            <div style="font-size: 16px; font-weight: 500;">{{ order.service_type }}</div>
+        </div>
+        <div>
+            <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 4px;">取件地点</div>
+            <div style="font-size: 16px;">{{ order.pick_up_location }}</div>
+        </div>
+        <div>
+            <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 4px;">送达地点</div>
+            <div style="font-size: 16px;">{{ order.delivery_location }}</div>
+        </div>
+        {% if order.tip > 0 %}
+        <div>
+            <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 4px;">小费</div>
+            <div style="font-size: 20px; font-weight: 600; color: var(--accent-color);">¥{{ order.tip }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">详细描述</h4>
+        <p style="font-size: 14px; color: var(--text-color); line-height: 1.6; white-space: pre-wrap;">{{ order.description }}</p>
+    </div>
+
+    <div style="margin-bottom: 20px; padding: 16px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">订单信息</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">发布者</div>
+                <div style="font-size: 14px;">{{ order.creator.username }}</div>
+            </div>
+            {% if order.runner %}
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">跑腿员</div>
+                <div style="font-size: 14px;">{{ order.runner.username }}</div>
+            </div>
+            {% endif %}
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">发布时间</div>
+                <div style="font-size: 14px;">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% if order.accepted_at %}
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">接单时间</div>
+                <div style="font-size: 14px;">{{ order.accepted_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% endif %}
+            {% if order.completed_at %}
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">完成时间</div>
+                <div style="font-size: 14px;">{{ order.completed_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            {% endif %}
+            {% if order.status == 'completed' %}
+            <div>
+                <div style="font-size: 12px; color: var(--secondary-color); margin-bottom: 2px;">评价状态</div>
+                <div style="font-size: 14px;">
+                    {% if order.creator_reviewed and order.runner_reviewed %}
+                        <span style="color: #28a745;">双方已互评</span>
+                    {% elif order.creator_reviewed %}
+                        <span style="color: #ffc107;">发布者已评</span>
+                    {% elif order.runner_reviewed %}
+                        <span style="color: #ffc107;">跑腿员已评</span>
+                    {% else %}
+                        <span style="color: #6c757d;">待评价</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if order.status == 'accepted' and order.creator_id == current_user.id and order.runner %}
+    <div style="margin-bottom: 16px; padding: 12px; border-radius: 10px; background-color: rgba(40,167,69,0.08); border: 1px solid rgba(40,167,69,0.25); font-size: 13px;">
+        已有跑腿员接单：{{ order.runner.username }}，请耐心等待送达。
+    </div>
+    {% endif %}
+
+    {% if delivery_proof_image %}
+    <div style="margin-bottom: 20px; padding: 16px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">送达凭证</h4>
+        <img src="{{ url_for('static', filename=delivery_proof_image) }}" alt="送达凭证" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--border-color);">
+    </div>
+    {% endif %}
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="{{ url_for('runner_orders', status='my_orders') }}" class="btn btn-secondary">返回列表</a>
+        
+        {% if order.status == 'pending' %}
+            {% if order.creator_id != current_user.id %}
+                {% if can_accept_orders %}
+            <form method="POST" action="{{ url_for('accept_runner_order', order_id=order.id) }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-accent">接单</button>
+            </form>
+                {% else %}
+            <form method="POST" action="{{ url_for('become_runner') }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-secondary">请先成为跑腿员</button>
+            </form>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+        
+        {% if order.status == 'accepted' and order.runner_id == current_user.id %}
+        <form method="POST" action="{{ url_for('start_runner_order', order_id=order.id) }}" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-accent">开始配送</button>
+        </form>
+        {% endif %}
+        
+        {% if order.status == 'in_progress' and order.runner_id == current_user.id %}
+        <form method="POST" action="{{ url_for('complete_runner_order', order_id=order.id) }}" enctype="multipart/form-data" style="display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="file" name="delivery_proof" accept="image/*" required style="font-size: 12px;">
+            <button type="submit" class="btn btn-success">完成订单</button>
+        </form>
+        {% endif %}
+        
+        {% if order.status in ['pending', 'accepted'] %}
+            {% if order.creator_id == current_user.id or order.runner_id == current_user.id %}
+            <form method="POST" action="{{ url_for('cancel_runner_order', order_id=order.id) }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('确定要取消这个订单吗？');">取消订单</button>
+            </form>
+            {% endif %}
+        {% endif %}
+        
+        {% if order.status == 'completed' %}
+            {% if order.creator_id == current_user.id and not order.creator_reviewed %}
+            <a href="{{ url_for('review_runner_order', order_id=order.id) }}" class="btn btn-warning">
+                评价跑腿员
+            </a>
+            {% elif order.runner_id == current_user.id and not order.runner_reviewed %}
+            <a href="{{ url_for('review_runner_order', order_id=order.id) }}" class="btn btn-warning">
+                评价发布者
+            </a>
+            {% elif (order.creator_id == current_user.id and order.creator_reviewed) or (order.runner_id == current_user.id and order.runner_reviewed) %}
+            <a href="{{ url_for('review_runner_order', order_id=order.id) }}" class="btn btn-secondary">
+                查看/修改评价
+            </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

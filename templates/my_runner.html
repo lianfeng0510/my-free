@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🚶</span>
+                我的跑腿
+            </h3>
+            <a href="{{ url_for('new_post', type='runner') }}" class="btn btn-accent">
+                发布跑腿
+            </a>
+        </div>
+        
+        {% if posts %}
+            {% for post in posts %}
+                <div style="border-bottom: 1px solid var(--border-color); padding: 16px 0; transition: all 0.3s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">
+                                <a href="{{ url_for('post', post_id=post.id) }}" style="text-decoration: none; color: var(--text-color);">{{ post.title }}</a>
+                            </h4>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: var(--secondary-color); line-height: 1.5;">
+                                {{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}
+                            </p>
+                            <div style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--secondary-color);">
+                                <span>价格: ¥{{ post.price if post.price else '面议' }}</span>
+                                <span>地点: {{ post.location if post.location else '未指定' }}</span>
+                                <span>状态: {{ '待接单' if post.status == 'active' else '已完成' if post.status == 'resolved' else '已关闭' }}</span>
+                                <span>发布时间: {{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                            <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                                编辑
+                            </a>
+                            <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-danger" style="font-size: 12px; padding: 6px 12px;">
+                                    删除
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 48px 24px; color: var(--secondary-color);">
+                <span style="font-size: 48px; display: block; margin-bottom: 16px;">🚶</span>
+                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">暂无跑腿服务</h4>
+                <p style="margin: 0; font-size: 14px;">点击右上角发布你的第一个跑腿服务</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

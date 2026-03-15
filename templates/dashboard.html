@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">📊</span>
+                数据看板
+            </h3>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background-color: rgba(255,152,0,0.05); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(255,152,0,0.1);">
+                <div style="font-size: 36px; margin-bottom: 8px;">📝</div>
+                <h4 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600; color: var(--accent-color);">{{ post_count }}</h4>
+                <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">发帖数</p>
+            </div>
+            <div style="background-color: rgba(76,175,80,0.05); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(76,175,80,0.1);">
+                <div style="font-size: 36px; margin-bottom: 8px;">💬</div>
+                <h4 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600; color: var(--success-color);">{{ comment_count }}</h4>
+                <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">评论数</p>
+            </div>
+            <div style="background-color: rgba(0,123,255,0.05); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(0,123,255,0.1);">
+                <div style="font-size: 36px; margin-bottom: 8px;">⭐</div>
+                <h4 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600; color: var(--primary-color);">{{ collection_count }}</h4>
+                <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">收藏数</p>
+            </div>
+            <div style="background-color: rgba(255,99,132,0.05); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(255,99,132,0.1);">
+                <div style="font-size: 36px; margin-bottom: 8px;">👍</div>
+                <h4 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 600; color: var(--danger-color);">{{ like_count }}</h4>
+                <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">点赞数</p>
+            </div>
+        </div>
+        
+        <!-- 最近动态 -->
+        <div style="margin-top: 24px;">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">最近动态</h4>
+            
+            {% if recent_posts %}
+                {% for post in recent_posts %}
+                    <div style="border-bottom: 1px solid var(--border-color); padding: 12px 0; transition: all 0.3s ease;">
+                        <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">
+                            <a href="{{ url_for('post', post_id=post.id) }}" style="text-decoration: none; color: var(--text-color);">{{ post.title }}</a>
+                        </h5>
+                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">
+                            发布于 {{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}
+                        </p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 24px; color: var(--secondary-color);">
+                    <span style="font-size: 24px; display: block; margin-bottom: 8px;">📝</span>
+                    <p style="margin: 0; font-size: 14px;">暂无动态</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

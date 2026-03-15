@@ -1,0 +1,914 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        .home-block {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 16px;
+        }
+        .home-block-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .home-feed-card {
+            padding: 14px;
+            border-radius: 18px;
+            background-color: #fff;
+            transition: all 0.24s ease;
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .home-feed-meta {
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .home-discuss-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+        .home-top-block {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: var(--shadow-md);
+        }
+        .home-shortcut-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .home-shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+        }
+        .home-shortcut-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            padding: 16px;
+            border-radius: 12px;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .home-shortcut-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+        }
+        .home-shortcut-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .home-shortcut-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .home-shortcut-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .home-shortcut-edit {
+            font-size: 12px;
+            color: var(--accent-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .theme-orange { background-color: rgba(255,152,0,0.05); }
+        .theme-orange .home-shortcut-icon { background-color: rgba(255,152,0,0.1); }
+        .theme-green { background-color: rgba(76,175,80,0.05); }
+        .theme-green .home-shortcut-icon { background-color: rgba(76,175,80,0.1); }
+        .theme-red { background-color: rgba(255,99,132,0.05); }
+        .theme-red .home-shortcut-icon { background-color: rgba(255,99,132,0.1); }
+        .theme-blue { background-color: rgba(0,123,255,0.05); }
+        .theme-blue .home-shortcut-icon { background-color: rgba(0,123,255,0.1); }
+        .theme-purple { background-color: rgba(153,102,255,0.05); }
+        .theme-purple .home-shortcut-icon { background-color: rgba(153,102,255,0.1); }
+        .theme-yellow { background-color: rgba(255,206,86,0.05); }
+        .theme-yellow .home-shortcut-icon { background-color: rgba(255,206,86,0.1); }
+        .theme-cyan { background-color: rgba(75,192,192,0.05); }
+        .theme-cyan .home-shortcut-icon { background-color: rgba(75,192,192,0.1); }
+        .theme-gray { background-color: rgba(108,117,125,0.05); }
+        .theme-gray .home-shortcut-icon { background-color: rgba(108,117,125,0.1); }
+        .home-search-form {
+            display: flex;
+            gap: 0;
+            border-radius: 24px;
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.05);
+        }
+        .home-search-input {
+            flex: 1;
+            border: none;
+            background-color: transparent;
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+        .home-search-submit {
+            border: none;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0 24px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .home-banner-box {
+            position: relative;
+            height: 180px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .home-banner-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 24px;
+        }
+        .home-banner-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .home-banner-desc {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        .home-banner-cta {
+            background-color: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+        .home-banner-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+        .home-banner-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.5);
+        }
+        .home-banner-dot.active {
+            background-color: white;
+        }
+        .home-section-compact {
+            border-radius: 14px;
+            padding: 14px;
+        }
+        .home-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 11px;
+        }
+        .home-section-head-title {
+            font-size: 18px;
+            margin: 0;
+        }
+        .home-footprint-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .home-footprint-item {
+            text-decoration: none;
+            color: var(--text-color);
+            text-align: center;
+            min-width: 56px;
+        }
+        .home-footprint-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            margin: 0 auto 6px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,152,0,0.12);
+            font-size: 20px;
+        }
+        .home-follow-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .home-follow-card {
+            text-decoration: none;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .home-follow-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .home-footprint-name {
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .home-follow-heat {
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+        .home-feed-head {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .home-post-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--accent-color);
+        }
+        .home-post-time {
+            font-size: 11px;
+            color: #666;
+        }
+        .home-feed-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+        .home-feed-title-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: color 0.2s ease;
+        }
+        .home-feed-cover {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            max-height: 240px;
+        }
+        .home-feed-cover img {
+            width: 100%;
+            object-fit: cover;
+        }
+        .home-feed-content {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 14px;
+            line-height: 1.55;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .home-author-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-author-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .home-author-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .home-author-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .home-feed-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.1px;
+        }
+        .home-feed-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .home-discuss-grid {
+            display: grid;
+            gap: 9px;
+        }
+        .home-discuss-rank {
+            width: 22px;
+            text-align: center;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+        .home-discuss-title {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .home-discuss-count {
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+        .home-empty-text {
+            font-size: 13px;
+            color: var(--secondary-color);
+        }
+        .home-pager-wrap {
+            margin-top: 24px;
+            text-align: center;
+        }
+        .home-pager {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .home-page-summary {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+        .home-search-wrap {
+            margin: 0;
+        }
+        .home-overflow-hidden {
+            overflow: hidden;
+        }
+        .home-shortcut-wrap {
+            padding: 20px;
+        }
+        .home-icon-tiny {
+            font-size: 10px;
+        }
+        .home-block-title-compact {
+            margin-bottom: 14px;
+        }
+        @media (max-width: 480px) {
+            .home-shortcut-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            .home-shortcut-item {
+                padding: 10px 2px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .home-shortcut-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+            .home-shortcut-label {
+                font-size: 11px;
+                transform: scale(0.9);
+                white-space: nowrap;
+            }
+            .home-block, .home-top-block {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            .home-banner-box {
+                height: 150px;
+            }
+            .home-banner-title {
+                font-size: 18px;
+            }
+            .home-banner-desc {
+                font-size: 13px;
+                margin-bottom: 12px;
+            }
+            .home-section-head-title {
+                font-size: 16px;
+            }
+            .home-feed-card {
+                padding: 12px;
+                border-radius: 12px;
+            }
+            .home-feed-title {
+                font-size: 16px;
+            }
+            .home-search-input {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+            .home-search-submit {
+                padding: 0 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+    <!-- 顶部搜索框 -->
+    <div class="mb-4 home-top-block">
+        <form method="GET" action="{{ url_for('home') }}" class="home-search-wrap">
+            <div class="search-form home-search-form">
+                <input type="text" name="search" placeholder="搜索帖子、用户、二手商品、服务" value="{{ search_query or '' }}" class="home-search-input">
+                <button type="submit" class="home-search-submit">搜索</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Banner轮播 -->
+    <div class="mb-4 home-top-block home-overflow-hidden">
+        <div class="home-banner-box">
+            <div class="home-banner-overlay">
+                <div>
+                    <h3 class="home-banner-title">校园一站式服务平台</h3>
+                    <p class="home-banner-desc">连接校园生活，便捷服务每一天</p>
+                    <a href="#" class="btn btn-accent home-banner-cta">立即体验</a>
+                </div>
+            </div>
+            <div class="home-banner-dots">
+                <div class="home-banner-dot"></div>
+                <div class="home-banner-dot active"></div>
+                <div class="home-banner-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4 home-top-block home-section-compact">
+        <div class="home-section-head">
+            <h3 class="home-section-head-title">我的足迹</h3>
+            <a href="{{ url_for('forum') }}" class="ui-link-muted">显示</a>
+        </div>
+        <div class="home-footprint-row">
+            {% for circle in circles[:6] %}
+            <a href="{{ url_for('circle_detail', circle_id=circle.id) }}" class="home-footprint-item">
+                <div class="home-footprint-avatar">{{ '🌟' }}</div>
+                <div class="home-footprint-name">{{ circle.name[:4] }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mb-4 home-top-block home-section-compact">
+        <div class="home-section-head">
+            <h3 class="home-section-head-title">我关注的吧</h3>
+            <a href="{{ url_for('forum') }}" class="ui-link-muted">全部 ›</a>
+        </div>
+        <div class="home-follow-grid">
+            {% for circle in circles[:4] %}
+            <a href="{{ url_for('circle_detail', circle_id=circle.id) }}" class="home-follow-card">
+                <div class="home-follow-title">{{ circle.name }}</div>
+                <div class="home-follow-heat">热度 {{ 12 + loop.index * 3 }}W</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- 快捷入口（8宫格） -->
+    <div class="mb-4 home-top-block home-shortcut-wrap">
+        <div class="home-shortcut-head">
+            <h3 class="home-shortcut-title">快捷服务</h3>
+            <button id="edit-shortcuts" class="home-shortcut-edit">
+                编辑
+            </button>
+        </div>
+        <div id="shortcuts-container" class="home-shortcut-grid">
+            <!-- 二手交易 -->
+            <a href="{{ url_for('services', type='second_hand') }}" id="shortcut-1" class="shortcut-item home-shortcut-item theme-orange" data-id="1">
+                <div class="home-shortcut-icon">
+                    🛍️
+                </div>
+                <span class="home-shortcut-label">二手交易</span>
+            </a>
+            <!-- 跑腿 -->
+            <a href="{{ url_for('services', type='runner') }}" id="shortcut-2" class="shortcut-item home-shortcut-item theme-green" data-id="2">
+                <div class="home-shortcut-icon">
+                    🚶
+                </div>
+                <span class="home-shortcut-label">跑腿</span>
+            </a>
+            <!-- 外卖 -->
+            <a href="{{ url_for('services', type='food') }}" id="shortcut-3" class="shortcut-item home-shortcut-item theme-red" data-id="3">
+                <div class="home-shortcut-icon">
+                    🍔
+                </div>
+                <span class="home-shortcut-label">外卖</span>
+            </a>
+            <!-- 失物招领 -->
+            <a href="{{ url_for('services', type='lost_found') }}" id="shortcut-4" class="shortcut-item home-shortcut-item theme-blue" data-id="4">
+                <div class="home-shortcut-icon">
+                    🔍
+                </div>
+                <span class="home-shortcut-label">失物招领</span>
+            </a>
+            <!-- 兼职招聘 -->
+            <a href="{{ url_for('services', type='part_time') }}" id="shortcut-5" class="shortcut-item home-shortcut-item theme-purple" data-id="5">
+                <div class="home-shortcut-icon">
+                    💼
+                </div>
+                <span class="home-shortcut-label">兼职招聘</span>
+            </a>
+            <!-- 课程资料 -->
+            <a href="{{ url_for('services', type='course') }}" id="shortcut-6" class="shortcut-item home-shortcut-item theme-yellow" data-id="6">
+                <div class="home-shortcut-icon">
+                    📚
+                </div>
+                <span class="home-shortcut-label">课程资料</span>
+            </a>
+            <!-- 拼车 -->
+            <a href="{{ url_for('services', type='activity') }}" id="shortcut-7" class="shortcut-item home-shortcut-item theme-cyan" data-id="7">
+                <div class="home-shortcut-icon">
+                    🚗
+                </div>
+                <span class="home-shortcut-label">拼车</span>
+            </a>
+            <!-- 全部服务 -->
+            <a href="{{ url_for('services') }}" id="shortcut-8" class="shortcut-item home-shortcut-item theme-gray" data-id="8">
+                <div class="home-shortcut-icon">
+                    📋
+                </div>
+                <span class="home-shortcut-label">全部服务</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- JavaScript for shortcut customization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const shortcutsContainer = document.getElementById('shortcuts-container');
+            const editButton = document.getElementById('edit-shortcuts');
+            const shortcutItems = document.querySelectorAll('.shortcut-item');
+            
+            let isEditing = false;
+            let draggedItem = null;
+            let longPressTimer = null;
+            
+            // 从localStorage加载用户配置
+            function loadUserConfig() {
+                try {
+                    const config = JSON.parse(localStorage.getItem('shortcutConfig'));
+                    if (config && config.order) {
+                        // 重新排序快捷入口
+                        const orderedItems = [];
+                        config.order.forEach(id => {
+                            const item = document.querySelector(`.shortcut-item[data-id="${id}"]`);
+                            if (item) {
+                                orderedItems.push(item);
+                            }
+                        });
+                        
+                        // 添加未在配置中的项目
+                        shortcutItems.forEach(item => {
+                            if (!orderedItems.includes(item)) {
+                                orderedItems.push(item);
+                            }
+                        });
+                        
+                        // 清空容器并重新添加
+                        shortcutsContainer.innerHTML = '';
+                        orderedItems.forEach(item => {
+                            shortcutsContainer.appendChild(item);
+                        });
+                    }
+                    
+                    if (config && config.hidden) {
+                        // 隐藏被标记的项目
+                        config.hidden.forEach(id => {
+                            const item = document.querySelector(`.shortcut-item[data-id="${id}"]`);
+                            if (item) {
+                                item.style.display = 'none';
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error loading shortcut config:', e);
+                }
+            }
+            
+            // 保存用户配置到localStorage
+            function saveUserConfig() {
+                const order = Array.from(shortcutsContainer.children).map(item => item.dataset.id);
+                const hidden = Array.from(shortcutItems)
+                    .filter(item => item.style.display === 'none')
+                    .map(item => item.dataset.id);
+                
+                const config = { order, hidden };
+                localStorage.setItem('shortcutConfig', JSON.stringify(config));
+            }
+            
+            // 初始化
+            loadUserConfig();
+            
+            // 点击跳转（避免拖拽或覆盖影响）
+            shortcutsContainer.addEventListener('click', function(e) {
+                const link = e.target.closest('a.shortcut-item');
+                if (!link) return;
+                if (isEditing) {
+                    e.preventDefault();
+                    return;
+                }
+                if (link.href) {
+                    e.preventDefault();
+                    window.location.href = link.href;
+                }
+            });
+            
+            // 编辑按钮点击事件
+            editButton.addEventListener('click', function() {
+                isEditing = !isEditing;
+                if (isEditing) {
+                    editButton.textContent = '完成';
+                    editButton.style.color = 'var(--success-color)';
+                    // 添加编辑模式样式
+                    shortcutItems.forEach(item => {
+                        item.style.position = 'relative';
+                        // 添加隐藏按钮
+                        const hideButton = document.createElement('div');
+                        hideButton.className = 'hide-button';
+                        hideButton.style.position = 'absolute';
+                        hideButton.textContent = '×';
+                        hideButton.style.cssText = `
+                            position: absolute;
+                            top: 4px;
+                            right: 4px;
+                            width: 16px;
+                            height: 16px;
+                            border-radius: 50%;
+                            background-color: rgba(220,53,69,0.8);
+                            color: white;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 10px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            z-index: 10;
+                        `;
+                        hideButton.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            item.style.display = 'none';
+                            saveUserConfig();
+                        });
+                        item.appendChild(hideButton);
+                    });
+                } else {
+                    editButton.textContent = '编辑';
+                    editButton.style.color = 'var(--accent-color)';
+                    // 移除编辑模式样式
+                    shortcutItems.forEach(item => {
+                        const hideButton = item.querySelector('.hide-button');
+                        if (hideButton) {
+                            item.removeChild(hideButton);
+                        }
+                    });
+                    // 退出编辑时禁用拖拽
+                    shortcutItems.forEach(item => {
+                        item.removeAttribute('draggable');
+                    });
+                }
+            });
+            
+            // 为每个快捷入口添加长按事件
+            shortcutItems.forEach(item => {
+                item.addEventListener('mousedown', startLongPress);
+                item.addEventListener('touchstart', startLongPress);
+                item.addEventListener('mouseup', cancelLongPress);
+                item.addEventListener('mouseleave', cancelLongPress);
+                item.addEventListener('touchend', cancelLongPress);
+                item.addEventListener('touchcancel', cancelLongPress);
+                
+                // 拖拽事件
+                item.addEventListener('dragstart', function(e) {
+                    if (isEditing) {
+                        draggedItem = this;
+                        setTimeout(() => {
+                            this.style.opacity = '0.5';
+                        }, 0);
+                    }
+                });
+                
+                item.addEventListener('dragend', function(e) {
+                    draggedItem = null;
+                    this.style.opacity = '1';
+                    saveUserConfig();
+                });
+                
+                item.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                });
+                
+                item.addEventListener('dragenter', function(e) {
+                    e.preventDefault();
+                    if (isEditing && draggedItem !== this) {
+                        this.style.transform = 'scale(1.05)';
+                    }
+                });
+                
+                item.addEventListener('dragleave', function(e) {
+                    this.style.transform = 'scale(1)';
+                });
+                
+                item.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.style.transform = 'scale(1)';
+                    if (isEditing && draggedItem !== this) {
+                        const container = shortcutsContainer;
+                        const children = Array.from(container.children);
+                        const draggedIndex = children.indexOf(draggedItem);
+                        const dropIndex = children.indexOf(this);
+                        
+                        if (draggedIndex < dropIndex) {
+                            container.insertBefore(draggedItem, this.nextSibling);
+                        } else {
+                            container.insertBefore(draggedItem, this);
+                        }
+                        saveUserConfig();
+                    }
+                });
+            });
+            
+            // 开始长按检测
+            function startLongPress(e) {
+                longPressTimer = setTimeout(() => {
+                    isEditing = true;
+                    editButton.click(); // 触发编辑模式
+                }, 800); // 800ms长按
+            }
+            
+            // 取消长按检测
+            function cancelLongPress() {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }
+            
+            // 启用拖拽
+            // 仅在进入编辑模式时启用拖拽
+            editButton.addEventListener('click', function() {
+                if (isEditing) {
+                    shortcutItems.forEach(item => {
+                        item.setAttribute('draggable', 'true');
+                    });
+                }
+            });
+        });
+    </script>
+    
+    <!-- 动态信息流 -->
+    <div class="mb-4">
+        <!-- 推荐帖子 -->
+        <div class="home-block">
+            <h3 class="home-block-title">
+                <span>推荐帖子</span>
+                <a href="{{ url_for('forum') }}" class="ui-link-muted">查看更多</a>
+            </h3>
+            {% if posts %}
+                <div class="space-y-3">
+                    {% for post in posts %}
+                        <div class="post-card home-feed-card">
+                            <div class="home-feed-head">
+                                <span class="post-tag home-post-tag">
+                                    {{ post.post_type | default('帖子') }}
+                                </span>
+                                <span class="home-post-time">
+                                    {{ post.date_posted.strftime('%m-%d %H:%M') }}
+                                </span>
+                            </div>
+                            <h4 class="home-feed-title">
+                                <a href="{{ url_for('post', post_id=post.id) }}" class="home-feed-title-link">{{ post.title }}</a>
+                            </h4>
+                            {% set cover = (post_images(post)[0] if post_images(post) else '') %}
+                            {% if cover %}
+                            <div class="home-feed-cover">
+                                <img src="{{ url_for('static', filename=cover) }}" alt="{{ post.title }}">
+                            </div>
+                            {% endif %}
+                            <p class="home-feed-content">
+                                {{ post.content[:80] }}{% if post.content|length > 80 %}...{% endif %}
+                            </p>
+                            <div class="home-feed-meta">
+                                <div class="home-author-row">
+                                    <span class="home-author-inline">
+                                        <span class="home-author-avatar"><img src="{{ resolve_avatar_url(post.author) }}" alt="{{ post.author.username }}"></span>
+                                        <span>{{ post.author.username }}</span>
+                                    </span>
+                                </div>
+                                <div class="home-feed-actions">
+                                    <span class="home-feed-action">
+                                        <span class="home-icon-tiny">♡</span>
+                                        {{ post.like_count }}
+                                    </span>
+                                    <span class="home-feed-action">
+                                        <span class="home-icon-tiny">◔</span>
+                                        {{ post.comment_count }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <p class="ui-text-muted">暂无推荐帖子</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="home-block">
+            <h3 class="home-block-title home-block-title-compact">
+                <span>正在讨论</span>
+                <a href="{{ url_for('forum') }}" class="ui-link-muted">全部话题</a>
+            </h3>
+            <div class="home-discuss-grid">
+                {% for post in posts[:5] %}
+                <a href="{{ url_for('post', post_id=post.id) }}" class="home-discuss-item">
+                    <span class="home-discuss-rank">{{ loop.index }}</span>
+                    <span class="home-discuss-title">{{ post.title[:34] }}{% if post.title|length > 34 %}...{% endif %}</span>
+                    <span class="home-discuss-count">◔ {{ post.comment_count or 0 }}</span>
+                </a>
+                {% endfor %}
+                {% if not posts %}
+                <div class="home-empty-text">暂无讨论，去发布第一条内容吧。</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分页控件 -->
+    {% if pagination and pagination.pages > 1 %}
+    <div class="home-pager-wrap">
+        <nav class="home-pager">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('home', search=search_query, tab=tab, page=pagination.prev_num) }}" 
+               class="ui-page-link">
+                上一页
+            </a>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <span class="ui-page-current">
+                        {{ page_num }}
+                    </span>
+                    {% else %}
+                    <a href="{{ url_for('home', search=search_query, tab=tab, page=page_num) }}" 
+                       class="ui-page-link">
+                        {{ page_num }}
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <span class="ui-page-ellipsis">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <a href="{{ url_for('home', search=search_query, tab=tab, page=pagination.next_num) }}" 
+               class="ui-page-link">
+                下一页
+            </a>
+            {% endif %}
+        </nav>
+        <p class="home-page-summary">
+            共 {{ pagination.total }} 条，第 {{ pagination.page }} / {{ pagination.pages }} 页
+        </p>
+    </div>
+    {% endif %}
+{% endblock %}

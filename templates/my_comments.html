@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>我的评论</h2>
+    
+    <!-- 个人中心导航 -->
+    <div class="profile-nav">
+        <ul>
+            <li><a href="{{ url_for('profile') }}">概览</a></li>
+            <li><a href="{{ url_for('my_posts') }}">我的帖子</a></li>
+            <li><a href="{{ url_for('my_comments') }}" class="active">我的评论</a></li>
+            <li><a href="{{ url_for('notifications') }}">通知中心</a></li>
+            <li><a href="{{ url_for('my_collections') }}">我的收藏</a></li>
+        </ul>
+    </div>
+    
+    <!-- 我的评论列表 -->
+    <div class="profile-content">
+        {% if user_comments %}
+            <div class="comment-list">
+                {% for comment in user_comments %}
+                    <div class="comment mb-4">
+                        <div class="flex justify-between align-center mb-2">
+                            <h4>评论于: <a href="{{ url_for('post', post_id=comment.post.id) }}">{{ comment.post.title }}</a></h4>
+                            <span class="meta">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        </div>
+                        <div class="content">{{ comment.content }}</div>
+                        <div class="mt-2">
+                            <a href="{{ url_for('post', post_id=comment.post.id) }}#comments" class="btn btn-secondary">查看上下文</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-8">
+                <p>还没有发表过评论</p>
+                <a href="{{ url_for('home') }}" class="btn btn-accent mt-3">去浏览帖子</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

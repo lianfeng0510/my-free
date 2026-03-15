@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <h3 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">📞</span>
+                联系客服
+            </h3>
+        </div>
+        
+        <!-- 联系方式 -->
+        <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">联系方式</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div style="background-color: rgba(0,123,255,0.05); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(0,123,255,0.1);">
+                    <div style="font-size: 36px; margin-bottom: 8px;">📞</div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">客服电话</h5>
+                    <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">400-123-4567</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--secondary-color);">工作日 9:00-18:00</p>
+                </div>
+                
+                <div style="background-color: rgba(76,175,80,0.05); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(76,175,80,0.1);">
+                    <div style="font-size: 36px; margin-bottom: 8px;">💬</div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">在线客服</h5>
+                    <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">校园贴吧客服</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--secondary-color);">24小时在线</p>
+                </div>
+                
+                <div style="background-color: rgba(255,152,0,0.05); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid rgba(255,152,0,0.1);">
+                    <div style="font-size: 36px; margin-bottom: 8px;">📧</div>
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">邮箱客服</h5>
+                    <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">support@campusboard.com</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: var(--secondary-color);">24小时内回复</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 常见问题 -->
+        <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-color);">
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">常见问题</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background-color: rgba(0,0,0,0.02); border-radius: 8px; padding: 16px; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer;">
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">如何修改个人资料？</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">进入「我的」页面，点击「编辑资料」即可修改个人信息</p>
+                </div>
+                
+                <div style="background-color: rgba(0,0,0,0.02); border-radius: 8px; padding: 16px; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer;">
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">忘记密码怎么办？</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">在登录页面点击「忘记密码」，按照提示操作重置密码</p>
+                </div>
+                
+                <div style="background-color: rgba(0,0,0,0.02); border-radius: 8px; padding: 16px; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer;">
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">如何发布帖子？</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">点击底部导航栏的「+」按钮，或在论坛页面点击「发布帖子」按钮</p>
+                </div>
+                
+                <div style="background-color: rgba(0,0,0,0.02); border-radius: 8px; padding: 16px; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer;">
+                    <h5 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">积分有什么用？</h5>
+                    <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">积分可用于兑换校园周边礼品，参与平台活动等</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 提交问题 -->
+        <div>
+            <h4 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-color);">提交问题</h4>
+            
+            <form style="background-color: rgba(0,0,0,0.02); border-radius: 12px; padding: 20px; border: 1px solid rgba(0,0,0,0.05);">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-color);">问题类型</label>
+                    <select style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                        <option value="account">账号问题</option>
+                        <option value="post">帖子问题</option>
+                        <option value="function">功能问题</option>
+                        <option value="other">其他问题</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-color);">问题描述</label>
+                    <textarea placeholder="请详细描述你的问题..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; height: 120px; resize: vertical;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-color);">联系方式</label>
+                    <input type="text" placeholder="请留下你的联系方式，方便我们回复" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 12px;">
+                    提交问题
+                </button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

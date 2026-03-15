@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 420px; margin: 40px auto; padding: 0 20px;">
+    <!-- 注册卡片 -->
+    <div style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 20px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08); padding: 40px; border: 1px solid rgba(255, 152, 0, 0.1); position: relative; overflow: hidden;">
+        <!-- 装饰元素 -->
+        <div style="position: absolute; top: 0; right: 0; width: 120px; height: 120px; background: linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 152, 0, 0.1) 100%); border-radius: 0 0 0 100px; z-index: 0;"></div>
+        
+        <!-- 标题 -->
+        <div style="position: relative; z-index: 1; margin-bottom: 32px; text-align: center;">
+            <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 8px; color: #333; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">注册校园贴吧</h2>
+            <p style="font-size: 14px; color: #666; line-height: 1.5;">加入校园生活社区，发现更多精彩</p>
+        </div>
+        
+        <!-- 注册表单 -->
+        <form method="POST" style="position: relative; z-index: 1;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <!-- 用户名输入框 -->
+            <div style="margin-bottom: 24px;">
+                <label for="username" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #444;">用户名</label>
+                <div style="position: relative;">
+                    <input type="text" id="username" name="username" required 
+                           style="width: 100%; padding: 14px 16px 14px 44px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; color: #333; background-color: #fff; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                           placeholder="请输入用户名（2-20个字符）">
+                    <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #ff9800; font-size: 18px;">👤</div>
+                </div>
+                <p style="font-size: 12px; color: #888; margin-top: 6px;">用于在平台显示的身份标识</p>
+            </div>
+            
+            <!-- 密码输入框 -->
+            <div style="margin-bottom: 32px;">
+                <label for="password" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #444;">密码</label>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" required 
+                           style="width: 100%; padding: 14px 16px 14px 44px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; color: #333; background-color: #fff; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                           placeholder="请输入密码（至少6个字符）">
+                    <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #ff9800; font-size: 18px;">🔒</div>
+                    <button type="button" onclick="togglePasswordVisibility()" 
+                            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; cursor: pointer; font-size: 18px; padding: 0;">👁️</button>
+                </div>
+                <p style="font-size: 12px; color: #888; margin-top: 6px;">请设置安全的密码，建议包含字母、数字和符号</p>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <button type="submit" 
+                        style="padding: 16px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);">
+                    立即注册
+                </button>
+                
+                <a href="{{ url_for('login') }}" 
+                   style="padding: 16px; background-color: #f8f9fa; color: #666; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                    已有账号？立即登录
+                </a>
+            </div>
+        </form>
+        
+        <!-- 注册提示 -->
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #f0f0f0; position: relative; z-index: 1;">
+            <p style="font-size: 13px; color: #666; text-align: center; line-height: 1.6;">
+                📚 注册即表示您同意我们的
+                <a href="#" style="color: #ff9800; text-decoration: none; font-weight: 500;">服务条款</a>
+                和
+                <a href="#" style="color: #ff9800; text-decoration: none; font-weight: 500;">隐私政策</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- 校园特色提示 -->
+    <div style="background: linear-gradient(135deg, rgba(102, 187, 106, 0.05) 0%, rgba(102, 187, 106, 0.1) 100%); border-radius: 16px; padding: 20px; margin-top: 24px; border: 1px solid rgba(102, 187, 106, 0.2);">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div style="font-size: 24px; color: #66bb6a;">🎓</div>
+            <div>
+                <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 6px; color: #2e7d32;">校园用户专享</h4>
+                <p style="font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 4px;">✅ 实名认证享受更多信任</p>
+                <p style="font-size: 13px; color: #666; line-height: 1.5;">✅ 校内交易更安全便捷</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 切换密码显示/隐藏
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const toggleButton = event.currentTarget;
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.textContent = '👁️';
+        }
+    }
+    
+    // 输入框聚焦效果
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+        
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '#ff9800';
+                this.style.boxShadow = '0 0 0 3px rgba(255, 152, 0, 0.1)';
+                this.style.transform = 'translateY(-1px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#e0e0e0';
+                this.style.boxShadow = 'none';
+                this.style.transform = 'translateY(0)';
+            });
+            
+            // 初始交互
+            input.addEventListener('mouseenter', function() {
+                if (this !== document.activeElement) {
+                    this.style.borderColor = '#bdbdbd';
+                }
+            });
+            
+            input.addEventListener('mouseleave', function() {
+                if (this !== document.activeElement) {
+                    this.style.borderColor = '#e0e0e0';
+                }
+            });
+        });
+        
+        // 按钮悬停效果
+        const buttons = document.querySelectorAll('button, a[style*="padding: 16px"]');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                if (this.style.background.includes('linear-gradient')) {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 6px 20px rgba(255, 152, 0, 0.4)';
+                } else {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.borderColor = '#ff9800';
+                    this.style.color = '#ff9800';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                if (this.style.background.includes('linear-gradient')) {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 12px rgba(255, 152, 0, 0.3)';
+                } else {
+                    this.style.transform = 'translateY(0)';
+                    this.style.borderColor = '#e0e0e0';
+                    this.style.color = '#666';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

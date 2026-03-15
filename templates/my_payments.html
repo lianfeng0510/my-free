@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="max-width: 800px; margin: 0 auto;">
+        <!-- 顶部标题 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+            <h2 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">💰</span>
+                我的支付记录
+            </h2>
+            <p style="margin: 8px 0 0 0; font-size: 14px; color: var(--secondary-color);">
+                查看您的所有支付记录，包括二手交易和跑腿服务支付
+            </p>
+        </div>
+        
+        <!-- 支付记录列表 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md);">
+            {% if payments %}
+                <div class="space-y-4">
+                    {% for payment in payments %}
+                        <div style="padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); transition: all 0.3s ease; background-color: rgba(0,0,0,0.02);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                <div>
+                                    <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 8px;">
+                                        支付 #{{ payment.id }}
+                                    </h3>
+                                    <div style="display: flex; gap: 12px; font-size: 12px; color: var(--secondary-color);">
+                                        <span>{{ payment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                        <span>|</span>
+                                        <span>
+                                            {% if payment.payment_method == 'wechat' %}微信支付
+                                            {% elif payment.payment_method == 'alipay' %}支付宝
+                                            {% elif payment.payment_method == 'balance' %}余额支付
+                                            {% elif payment.payment_method == 'simulated' %}模拟支付
+                                            {% else %}{{ payment.payment_method }}
+                                            {% endif %}
+                                        </span>
+                                        {% if payment.transaction_id %}
+                                        <span>|</span>
+                                        <span>交易号: {{ payment.transaction_id[:8] }}...</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <span class="badge" style="background-color: 
+                                    {% if payment.status == 'completed' %}var(--success-color)
+                                    {% elif payment.status == 'pending' %}var(--warning-color)
+                                    {% elif payment.status == 'processing' %}var(--info-color)
+                                    {% elif payment.status == 'failed' %}var(--danger-color)
+                                    {% elif payment.status == 'refunded' %}var(--secondary-color)
+                                    {% else %}var(--secondary-color)
+                                    {% endif %}; 
+                                    color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">
+                                    {% if payment.status == 'completed' %}支付成功
+                                    {% elif payment.status == 'pending' %}待支付
+                                    {% elif payment.status == 'processing' %}处理中
+                                    {% elif payment.status == 'failed' %}支付失败
+                                    {% elif payment.status == 'refunded' %}已退款
+                                    {% else %}{{ payment.status }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <!-- 支付详情 -->
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px;">
+                                    <div>
+                                        <p style="margin: 0 0 4px 0; font-weight: 600; color: var(--text-color);">支付金额</p>
+                                        <p style="margin: 0; color: var(--accent-color); font-size: 18px; font-weight: 700;">
+                                            {{ payment.currency }} {{ payment.amount }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0 0 4px 0; font-weight: 600; color: var(--text-color);">支付渠道</p>
+                                        <p style="margin: 0; color: var(--text-color);">
+                                            {% if payment.payment_channel == 'wechat_pay' %}微信支付
+                                            {% elif payment.payment_channel == 'alipay_app' %}支付宝APP
+                                            {% elif payment.payment_channel == 'alipay_web' %}支付宝网页
+                                            {% else %}{{ payment.payment_channel or '模拟支付' }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0 0 4px 0; font-weight: 600; color: var(--text-color);">支付时间</p>
+                                        <p style="margin: 0; color: var(--text-color);">
+                                            {% if payment.paid_at %}
+                                                {{ payment.paid_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% else %}
+                                                未支付
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0 0 4px 0; font-weight: 600; color: var(--text-color);">退款时间</p>
+                                        <p style="margin: 0; color: var(--text-color);">
+                                            {% if payment.refunded_at %}
+                                                {{ payment.refunded_at.strftime('%Y-%m-%d %H:%M') }}
+                                            {% else %}
+                                                未退款
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {% if payment.description %}
+                                <div style="margin-top: 12px; padding: 12px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+                                    <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">
+                                        {{ payment.description }}
+                                    </p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 关联订单信息 -->
+                            <div style="padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: var(--text-color);">关联订单</h4>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    {% if payment.trade %}
+                                    <div style="flex: 1;">
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: var(--text-color);">
+                                            <span style="font-weight: 600;">二手交易:</span> 
+                                            <a href="{{ url_for('view_trade', trade_id=payment.trade.id) }}" style="color: var(--accent-color); text-decoration: none;">
+                                                {{ payment.trade.post.title[:30] }}{% if payment.trade.post.title|length > 30 %}...{% endif %}
+                                            </a>
+                                        </p>
+                                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">
+                                            交易ID: {{ payment.trade.id }} | 买家: {{ payment.trade.buyer.username }} | 卖家: {{ payment.trade.seller.username }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('view_trade', trade_id=payment.trade.id) }}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                                            查看交易
+                                        </a>
+                                    </div>
+                                    {% elif payment.runner_order %}
+                                    <div style="flex: 1;">
+                                        <p style="margin: 0 0 4px 0; font-size: 14px; color: var(--text-color);">
+                                            <span style="font-weight: 600;">跑腿订单:</span> 
+                                            <a href="{{ url_for('runner_order_detail', order_id=payment.runner_order.id) }}" style="color: var(--accent-color); text-decoration: none;">
+                                                {{ payment.runner_order.title[:30] }}{% if payment.runner_order.title|length > 30 %}...{% endif %}
+                                            </a>
+                                        </p>
+                                        <p style="margin: 0; font-size: 12px; color: var(--secondary-color);">
+                                            订单号: {{ payment.runner_order.order_number }} | 客户: {{ payment.runner_order.creator.username }} | 跑腿员: {{ payment.runner_order.runner.username if payment.runner_order.runner else '待接单' }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('runner_order_detail', order_id=payment.runner_order.id) }}" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                                            查看订单
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                    <div style="flex: 1;">
+                                        <p style="margin: 0; font-size: 14px; color: var(--secondary-color);">
+                                            订单信息不可用或已删除
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 48px 24px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
+                    <p style="font-size: 16px; color: var(--secondary-color); margin-bottom: 8px;">
+                        暂无支付记录
+                    </p>
+                    <p style="font-size: 14px; color: var(--secondary-color); margin-bottom: 24px;">
+                        您还没有任何支付记录，快去体验我们的服务吧
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <a href="{{ url_for('services') }}" class="btn btn-accent" style="font-size: 14px; padding: 10px 20px;">
+                            浏览服务
+                        </a>
+                        <a href="{{ url_for('profile') }}" class="btn btn-secondary" style="font-size: 14px; padding: 10px 20px;">
+                            返回个人中心
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 420px; margin: 40px auto; padding: 0 20px;">
+    <!-- 登录卡片 -->
+    <div style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border-radius: 20px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08); padding: 40px; border: 1px solid rgba(255, 152, 0, 0.1); position: relative; overflow: hidden;">
+        <!-- 装饰元素 -->
+        <div style="position: absolute; top: 0; left: 0; width: 120px; height: 120px; background: linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 152, 0, 0.1) 100%); border-radius: 0 0 100px 0; z-index: 0;"></div>
+        
+        <!-- 标题 -->
+        <div style="position: relative; z-index: 1; margin-bottom: 32px; text-align: center;">
+            <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 8px; color: #333; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">欢迎回来</h2>
+            <p style="font-size: 14px; color: #666; line-height: 1.5;">登录校园贴吧，继续您的校园生活</p>
+        </div>
+        
+        <!-- 登录表单 -->
+        <form method="POST" style="position: relative; z-index: 1;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <!-- 用户名输入框 -->
+            <div style="margin-bottom: 24px;">
+                <label for="username" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #444;">用户名</label>
+                <div style="position: relative;">
+                    <input type="text" id="username" name="username" required 
+                           style="width: 100%; padding: 14px 16px 14px 44px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; color: #333; background-color: #fff; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                           placeholder="请输入用户名">
+                    <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #ff9800; font-size: 18px;">👤</div>
+                </div>
+            </div>
+            
+            <!-- 密码输入框 -->
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label for="password" style="font-size: 14px; font-weight: 600; color: #444;">密码</label>
+                    <a href="#" style="font-size: 13px; color: #ff9800; text-decoration: none; font-weight: 500;" onclick="alert('请联系管理员重置密码'); return false;">忘记密码？</a>
+                </div>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" required 
+                           style="width: 100%; padding: 14px 16px 14px 44px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; color: #333; background-color: #fff; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+                           placeholder="请输入密码">
+                    <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #ff9800; font-size: 18px;">🔒</div>
+                    <button type="button" onclick="togglePasswordVisibility()" 
+                            style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; cursor: pointer; font-size: 18px; padding: 0;">👁️</button>
+                </div>
+            </div>
+            
+            <!-- 记住我选项 -->
+            <div style="margin-bottom: 32px; display: flex; align-items: center; gap: 10px;">
+                <div style="position: relative;">
+                    <input type="checkbox" id="remember" name="remember" 
+                           style="width: 20px; height: 20px; border: 2px solid #e0e0e0; border-radius: 6px; appearance: none; margin: 0; cursor: pointer; position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 12px; opacity: 0; transition: opacity 0.3s ease;">✓</span>
+                </div>
+                <label for="remember" style="font-size: 14px; color: #666; cursor: pointer; user-select: none;">记住登录状态</label>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <button type="submit" 
+                        style="padding: 16px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);">
+                    立即登录
+                </button>
+                
+                <a href="{{ url_for('register') }}" 
+                   style="padding: 16px; background-color: #f8f9fa; color: #666; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 16px; font-weight: 600; text-align: center; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                    没有账号？立即注册
+                </a>
+            </div>
+        </form>
+        
+        <!-- 登录提示 -->
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #f0f0f0; position: relative; z-index: 1;">
+            <p style="font-size: 13px; color: #666; text-align: center; line-height: 1.6;">
+                🔒 登录后可享受完整功能，包括二手交易、跑腿服务和私信沟通
+            </p>
+        </div>
+    </div>
+    
+    <!-- 快速访问 -->
+    <div style="background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(33, 150, 243, 0.1) 100%); border-radius: 16px; padding: 20px; margin-top: 24px; border: 1px solid rgba(33, 150, 243, 0.2);">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div style="font-size: 24px; color: #2196f3;">🚀</div>
+            <div>
+                <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 6px; color: #1565c0;">校园生活平台</h4>
+                <p style="font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 4px;">✅ 二手交易：买卖闲置物品，省钱又环保</p>
+                <p style="font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 4px;">✅ 跑腿服务：代取快递、代买物品，节省时间</p>
+                <p style="font-size: 13px; color: #666; line-height: 1.5;">✅ 私信沟通：与同学安全便捷地交流</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 切换密码显示/隐藏
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const toggleButton = event.currentTarget;
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.textContent = '👁️';
+        }
+    }
+    
+    // 自定义复选框样式
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('remember');
+        const checkboxSpan = checkbox.nextElementSibling;
+        
+        // 初始状态
+        if (checkbox.checked) {
+            checkbox.style.backgroundColor = '#ff9800';
+            checkbox.style.borderColor = '#ff9800';
+            checkboxSpan.style.opacity = '1';
+        }
+        
+        // 点击事件
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                this.style.backgroundColor = '#ff9800';
+                this.style.borderColor = '#ff9800';
+                checkboxSpan.style.opacity = '1';
+            } else {
+                this.style.backgroundColor = '#fff';
+                this.style.borderColor = '#e0e0e0';
+                checkboxSpan.style.opacity = '0';
+            }
+        });
+        
+        // 悬停效果
+        checkbox.addEventListener('mouseenter', function() {
+            if (!this.checked) {
+                this.style.borderColor = '#bdbdbd';
+            }
+        });
+        
+        checkbox.addEventListener('mouseleave', function() {
+            if (!this.checked) {
+                this.style.borderColor = '#e0e0e0';
+            }
+        });
+        
+        // 输入框聚焦效果
+        const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+        
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '#ff9800';
+                this.style.boxShadow = '0 0 0 3px rgba(255, 152, 0, 0.1)';
+                this.style.transform = 'translateY(-1px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#e0e0e0';
+                this.style.boxShadow = 'none';
+                this.style.transform = 'translateY(0)';
+            });
+            
+            // 初始交互
+            input.addEventListener('mouseenter', function() {
+                if (this !== document.activeElement) {
+                    this.style.borderColor = '#bdbdbd';
+                }
+            });
+            
+            input.addEventListener('mouseleave', function() {
+                if (this !== document.activeElement) {
+                    this.style.borderColor = '#e0e0e0';
+                }
+            });
+        });
+        
+        // 按钮悬停效果
+        const buttons = document.querySelectorAll('button, a[style*="padding: 16px"]');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                if (this.style.background.includes('linear-gradient')) {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 6px 20px rgba(255, 152, 0, 0.4)';
+                } else {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.borderColor = '#ff9800';
+                    this.style.color = '#ff9800';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                if (this.style.background.includes('linear-gradient')) {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 12px rgba(255, 152, 0, 0.3)';
+                } else {
+                    this.style.transform = 'translateY(0)';
+                    this.style.borderColor = '#e0e0e0';
+                    this.style.color = '#666';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

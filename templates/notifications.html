@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md);">
+        <!-- 顶部标题和一键已读 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🔔</span>
+                消息中心
+            </h2>
+            <button id="mark-all-read" style="padding: 8px 16px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">
+                一键已读
+            </button>
+        </div>
+        
+        <!-- 消息列表按类型分组 -->
+        <div class="space-y-6">
+            <!-- 评论和回复 -->
+            <div class="notification-group">
+                <div class="group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; padding: 12px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">💬</span>
+                        <h3 style="font-size: 16px; font-weight: 600; margin: 0;">评论和回复</h3>
+                        {% set comment_notifications = (notifications_by_type.comment|default([])) + (notifications_by_type.reply|default([])) %}
+                        {% set unread_count = (comment_notifications|selectattr('is_read', 'equalto', false)|list)|length %}
+                        {% if unread_count > 0 %}
+                        <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                            {{ unread_count }} 条未读
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="toggle-icon" style="font-size: 16px; color: var(--secondary-color); transition: transform 0.3s ease;">▼</span>
+                </div>
+                <div class="group-content space-y-3">
+                    {% set comment_notifications = notifications_by_type.comment|default([]) + notifications_by_type.reply|default([]) %}
+                    {% if comment_notifications %}
+                        {% for notification in comment_notifications %}
+                        <div class="notification-item {{ 'unread' if not notification.is_read else '' }}" style="padding: 16px; border-radius: 12px; {{ 'background-color: rgba(255,152,0,0.05); border-left: 4px solid var(--accent-color);' if not notification.is_read else 'background-color: rgba(0,0,0,0.02);' }} transition: all 0.3s ease; cursor: pointer;" data-type="{{ notification.notification_type }}" data-related-id="{{ notification.related_id }}" data-related-type="{{ notification.related_type }}">
+                            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                <div style="flex: 0 0 40px; height: 40px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--accent-color);">
+                                    💬
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="content" style="font-size: 14px; line-height: 1.6;">
+                                        {{ notification.content }}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--secondary-color); margin-top: 8px;">
+                                        {{ notification.date_created.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </div>
+                                </div>
+                                <div style="flex: 0 0 24px; display: flex; align-items: center;">
+                                    <span style="font-size: 20px; color: var(--secondary-color);">→</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 24px; text-align: center; color: var(--secondary-color); font-size: 14px;">
+                            暂无评论和回复通知
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 点赞和收藏 -->
+            <div class="notification-group">
+                <div class="group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; padding: 12px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">❤️</span>
+                        <h3 style="font-size: 16px; font-weight: 600; margin: 0;">点赞和收藏</h3>
+                        {% set like_notifications = (notifications_by_type.like|default([])) + (notifications_by_type.collect|default([])) %}
+                        {% set unread_count = (like_notifications|selectattr('is_read', 'equalto', false)|list)|length %}
+                        {% if unread_count > 0 %}
+                        <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                            {{ unread_count }} 条未读
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="toggle-icon" style="font-size: 16px; color: var(--secondary-color); transition: transform 0.3s ease;">▼</span>
+                </div>
+                <div class="group-content space-y-3">
+                    {% set like_notifications = notifications_by_type.like|default([]) + notifications_by_type.collect|default([]) %}
+                    {% if like_notifications %}
+                        {% for notification in like_notifications %}
+                        <div class="notification-item {{ 'unread' if not notification.is_read else '' }}" style="padding: 16px; border-radius: 12px; {{ 'background-color: rgba(255,152,0,0.05); border-left: 4px solid var(--accent-color);' if not notification.is_read else 'background-color: rgba(0,0,0,0.02);' }} transition: all 0.3s ease; cursor: pointer;" data-type="{{ notification.notification_type }}" data-related-id="{{ notification.related_id }}" data-related-type="{{ notification.related_type }}">
+                            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                <div style="flex: 0 0 40px; height: 40px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--accent-color);">
+                                    {{ '❤️' if notification.notification_type == 'like' else '⭐' }}
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="content" style="font-size: 14px; line-height: 1.6;">
+                                        {{ notification.content }}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--secondary-color); margin-top: 8px;">
+                                        {{ notification.date_created.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </div>
+                                </div>
+                                <div style="flex: 0 0 24px; display: flex; align-items: center;">
+                                    <span style="font-size: 20px; color: var(--secondary-color);">→</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 24px; text-align: center; color: var(--secondary-color); font-size: 14px;">
+                            暂无点赞和收藏通知
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 私信 -->
+            <div class="notification-group">
+                <div class="group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; padding: 12px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">💌</span>
+                        <h3 style="font-size: 16px; font-weight: 600; margin: 0;">私信</h3>
+                        {% set message_notifications = notifications_by_type.message|default([]) %}
+                        {% set unread_count = (message_notifications|selectattr('is_read', 'equalto', false)|list)|length %}
+                        {% if unread_count > 0 %}
+                        <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                            {{ unread_count }} 条未读
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="toggle-icon" style="font-size: 16px; color: var(--secondary-color); transition: transform 0.3s ease;">▼</span>
+                </div>
+                <div class="group-content space-y-3">
+                    {% set message_notifications = notifications_by_type.message|default([]) %}
+                    {% if message_notifications %}
+                        {% for notification in message_notifications %}
+                        <div class="notification-item {{ 'unread' if not notification.is_read else '' }}" style="padding: 16px; border-radius: 12px; {{ 'background-color: rgba(255,152,0,0.05); border-left: 4px solid var(--accent-color);' if not notification.is_read else 'background-color: rgba(0,0,0,0.02);' }} transition: all 0.3s ease; cursor: pointer;" data-type="{{ notification.notification_type }}" data-related-id="{{ notification.related_id }}" data-related-type="{{ notification.related_type }}">
+                            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                <div style="flex: 0 0 40px; height: 40px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--accent-color);">
+                                    💌
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="content" style="font-size: 14px; line-height: 1.6;">
+                                        {{ notification.content }}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--secondary-color); margin-top: 8px;">
+                                        {{ notification.date_created.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </div>
+                                </div>
+                                <div style="flex: 0 0 24px; display: flex; align-items: center;">
+                                    <span style="font-size: 20px; color: var(--secondary-color);">→</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 24px; text-align: center; color: var(--secondary-color); font-size: 14px;">
+                            暂无私信通知
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 系统通知 -->
+            <div class="notification-group">
+                <div class="group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; padding: 12px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">📢</span>
+                        <h3 style="font-size: 16px; font-weight: 600; margin: 0;">系统通知</h3>
+                        {% set system_notifications = notifications_by_type.system|default([]) %}
+                        {% set unread_count = (system_notifications|selectattr('is_read', 'equalto', false)|list)|length %}
+                        {% if unread_count > 0 %}
+                        <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                            {{ unread_count }} 条未读
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="toggle-icon" style="font-size: 16px; color: var(--secondary-color); transition: transform 0.3s ease;">▼</span>
+                </div>
+                <div class="group-content space-y-3">
+                    {% set system_notifications = notifications_by_type.system|default([]) %}
+                    {% if system_notifications %}
+                        {% for notification in system_notifications %}
+                        <div class="notification-item {{ 'unread' if not notification.is_read else '' }}" style="padding: 16px; border-radius: 12px; {{ 'background-color: rgba(255,152,0,0.05); border-left: 4px solid var(--accent-color);' if not notification.is_read else 'background-color: rgba(0,0,0,0.02);' }} transition: all 0.3s ease; cursor: pointer;" data-type="{{ notification.notification_type }}" data-related-id="{{ notification.related_id }}" data-related-type="{{ notification.related_type }}">
+                            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                <div style="flex: 0 0 40px; height: 40px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--accent-color);">
+                                    📢
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="content" style="font-size: 14px; line-height: 1.6;">
+                                        {{ notification.content }}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--secondary-color); margin-top: 8px;">
+                                        {{ notification.date_created.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </div>
+                                </div>
+                                <div style="flex: 0 0 24px; display: flex; align-items: center;">
+                                    <span style="font-size: 20px; color: var(--secondary-color);">→</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 24px; text-align: center; color: var(--secondary-color); font-size: 14px;">
+                            暂无系统通知
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 交易通知 -->
+            <div class="notification-group">
+                <div class="group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; padding: 12px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">💳</span>
+                        <h3 style="font-size: 16px; font-weight: 600; margin: 0;">交易通知</h3>
+                        {% set trade_notifications = notifications_by_type.trade|default([]) %}
+                        {% set unread_count = (trade_notifications|selectattr('is_read', 'equalto', false)|list)|length %}
+                        {% if unread_count > 0 %}
+                        <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                            {{ unread_count }} 条未读
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="toggle-icon" style="font-size: 16px; color: var(--secondary-color); transition: transform 0.3s ease;">▼</span>
+                </div>
+                <div class="group-content space-y-3">
+                    {% set trade_notifications = notifications_by_type.trade|default([]) %}
+                    {% if trade_notifications %}
+                        {% for notification in trade_notifications %}
+                        <div class="notification-item {{ 'unread' if not notification.is_read else '' }}" style="padding: 16px; border-radius: 12px; {{ 'background-color: rgba(255,152,0,0.05); border-left: 4px solid var(--accent-color);' if not notification.is_read else 'background-color: rgba(0,0,0,0.02);' }} transition: all 0.3s ease; cursor: pointer;" data-type="{{ notification.notification_type }}" data-related-id="{{ notification.related_id }}" data-related-type="{{ notification.related_type }}">
+                            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                <div style="flex: 0 0 40px; height: 40px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--accent-color);">
+                                    💳
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="content" style="font-size: 14px; line-height: 1.6;">
+                                        {{ notification.content }}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--secondary-color); margin-top: 8px;">
+                                        {{ notification.date_created.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </div>
+                                </div>
+                                <div style="flex: 0 0 24px; display: flex; align-items: center;">
+                                    <span style="font-size: 20px; color: var(--secondary-color);">→</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 24px; text-align: center; color: var(--secondary-color); font-size: 14px;">
+                            暂无交易通知
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 跑腿员通知 -->
+            <div class="notification-group">
+                <div class="group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; padding: 12px; background-color: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">🚶</span>
+                        <h3 style="font-size: 16px; font-weight: 600; margin: 0;">跑腿员通知</h3>
+                        {% set runner_notifications = notifications_by_type.runner|default([]) %}
+                        {% set unread_count = (runner_notifications|selectattr('is_read', 'equalto', false)|list)|length %}
+                        {% if unread_count > 0 %}
+                        <span style="font-size: 12px; color: var(--secondary-color); background-color: rgba(0,0,0,0.05); padding: 2px 8px; border-radius: 12px;">
+                            {{ unread_count }} 条未读
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span class="toggle-icon" style="font-size: 16px; color: var(--secondary-color); transition: transform 0.3s ease;">▼</span>
+                </div>
+                <div class="group-content space-y-3">
+                    {% set runner_notifications = notifications_by_type.runner|default([]) %}
+                    {% if runner_notifications %}
+                        {% for notification in runner_notifications %}
+                        <div class="notification-item {{ 'unread' if not notification.is_read else '' }}" style="padding: 16px; border-radius: 12px; {{ 'background-color: rgba(255,152,0,0.05); border-left: 4px solid var(--accent-color);' if not notification.is_read else 'background-color: rgba(0,0,0,0.02);' }} transition: all 0.3s ease; cursor: pointer;" data-type="{{ notification.notification_type }}" data-related-id="{{ notification.related_id }}" data-related-type="{{ notification.related_type }}">
+                            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                <div style="flex: 0 0 40px; height: 40px; border-radius: 50%; background-color: rgba(255,152,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--accent-color);">
+                                    🚶
+                                </div>
+                                <div style="flex: 1;">
+                                    <div class="content" style="font-size: 14px; line-height: 1.6;">
+                                        {{ notification.content }}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--secondary-color); margin-top: 8px;">
+                                        {{ notification.date_created.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    </div>
+                                </div>
+                                <div style="flex: 0 0 24px; display: flex; align-items: center;">
+                                    <span style="font-size: 20px; color: var(--secondary-color);">→</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="padding: 24px; text-align: center; color: var(--secondary-color); font-size: 14px;">
+                            暂无跑腿员通知
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript for toggle functionality -->
+    <script>
+        // 分组折叠/展开功能
+        document.querySelectorAll('.group-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('.toggle-icon');
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    content.style.display = 'none';
+                    icon.style.transform = 'rotate(-90deg)';
+                }
+            });
+        });
+        
+        // 一键已读功能
+        document.getElementById('mark-all-read').addEventListener('click', function() {
+            // 调用后端API标记所有通知为已读
+            fetch('/profile/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 更新前端显示
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                        item.style.backgroundColor = 'rgba(0,0,0,0.02)';
+                        item.style.borderLeft = 'none';
+                    });
+                    document.querySelectorAll('.group-header span[style*="padding: 2px 8px; border-radius: 12px;"]').forEach(badge => {
+                        badge.textContent = '0 条未读';
+                    });
+                    alert('所有消息已标记为已读');
+                } else {
+                    alert('标记通知为已读时出错：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notifications as read:', error);
+                alert('标记通知为已读时出错，请稍后再试');
+            });
+        });
+        
+        // 消息点击跳转
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const type = this.dataset.type;
+                const relatedId = this.dataset.relatedId;
+                const relatedType = this.dataset.relatedType;
+                
+                // 根据通知类型和关联信息跳转到对应页面
+                if (relatedType === 'post' && relatedId) {
+                    window.location.href = `/post/${relatedId}`;
+                } else if (relatedType === 'comment' && relatedId) {
+                    // 跳转到评论所在的帖子
+                    window.location.href = `/post/${relatedId}`;
+                } else if (type === 'trade') {
+                    // 跳转到交易订单页面
+                    window.location.href = '/services';
+                } else if (type === 'runner') {
+                    // 跳转到跑腿订单页面
+                    window.location.href = '/services';
+                } else {
+                    // 默认跳转到通知详情页
+                    alert('跳转到消息详情页');
+                }
+            });
+        });
+    </script>
+{% endblock %}

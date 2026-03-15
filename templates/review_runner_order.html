@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+    <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 24px;">⭐</span>
+        评价{{ '跑腿员' if review_type == 'creator_to_runner' else '发布者' }} {{ other_username }}
+    </h2>
+    
+    <div style="margin-bottom: 24px; padding: 16px; background-color: rgba(0,0,0,0.02); border-radius: 12px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">订单信息</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+            <div>
+                <span style="font-size: 13px; color: var(--secondary-color);">订单标题</span>
+                <p style="font-size: 15px; font-weight: 500; margin-top: 4px;">{{ order.title }}</p>
+            </div>
+            <div>
+                <span style="font-size: 13px; color: var(--secondary-color);">服务类型</span>
+                <p style="font-size: 15px; font-weight: 500; margin-top: 4px;">{{ order.service_type }}</p>
+            </div>
+            <div>
+                <span style="font-size: 13px; color: var(--secondary-color);">订单状态</span>
+                <p style="font-size: 15px; font-weight: 500; margin-top: 4px;">已完成</p>
+            </div>
+            <div>
+                <span style="font-size: 13px; color: var(--secondary-color);">订单编号</span>
+                <p style="font-size: 15px; font-weight: 500; margin-top: 4px;">{{ order.order_number }}</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if existing_review %}
+    <div style="margin-bottom: 24px; padding: 16px; background-color: rgba(255,193,7,0.05); border: 1px solid rgba(255,193,7,0.2); border-radius: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <span style="font-size: 20px;">📝</span>
+            <span style="font-size: 15px; font-weight: 600;">您已评价过此订单</span>
+        </div>
+        <p style="font-size: 14px; color: var(--secondary-color); margin: 0;">
+            您之前的评分：<span style="font-weight: 600; color: var(--accent-color);">{{ existing_review.rating }}/5星</span>
+        </p>
+        {% if existing_review.content %}
+        <p style="font-size: 14px; margin-top: 8px; margin-bottom: 0;">评价内容：{{ existing_review.content }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="{{ url_for('submit_runner_review', order_id=order.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div style="margin-bottom: 24px;">
+            <label style="display: block; font-size: 15px; font-weight: 600; margin-bottom: 12px;">
+                请为{{ '跑腿员' if review_type == 'creator_to_runner' else '发布者' }} {{ other_username }} 评分
+            </label>
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                {% for i in range(1, 6) %}
+                <label style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center;">
+                    <input type="radio" name="rating" value="{{ i }}" 
+                           style="display: none;" 
+                           {% if existing_review and existing_review.rating == i %}checked{% endif %}>
+                    <span style="font-size: 32px; color: {% if existing_review and existing_review.rating >= i %}var(--warning-color){% else %}var(--border-color){% endif %}; 
+                           transition: color 0.2s ease;"
+                           onmouseover="this.style.color='var(--warning-color)'"
+                           onmouseout="this.style.color='{% if existing_review and existing_review.rating >= i %}var(--warning-color){% else %}var(--border-color){% endif %}'">
+                        ★
+                    </span>
+                    <span style="font-size: 12px; margin-top: 4px;">{{ i }}星</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 32px;">
+            <label style="display: block; font-size: 15px; font-weight: 600; margin-bottom: 12px;">
+                评价内容（可选）
+            </label>
+            <textarea name="content" placeholder="请详细描述您的体验，例如：配送是否准时、服务态度如何、商品是否完好等" 
+                      style="width: 100%; min-height: 120px; padding: 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; resize: vertical;">{{ existing_review.content if existing_review else '' }}</textarea>
+            <p style="font-size: 13px; color: var(--secondary-color); margin-top: 8px; margin-bottom: 0;">
+                您的评价将公开显示在对方个人资料中
+            </p>
+        </div>
+        
+        <div style="display: flex; gap: 12px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+            <button type="submit" class="btn btn-accent" style="padding: 12px 32px; font-size: 14px; font-weight: 600;">
+                {{ '更新评价' if existing_review else '提交评价' }}
+            </button>
+            <a href="{{ url_for('runner_order_detail', order_id=order.id) }}" class="btn btn-secondary" style="padding: 12px 32px; font-size: 14px;">
+                返回订单详情
+            </a>
+        </div>
+    </form>
+    
+    <!-- 评价提示 -->
+    <div style="margin-top: 32px; padding: 16px; background-color: rgba(33,150,243,0.05); border: 1px solid rgba(33,150,243,0.2); border-radius: 12px;">
+        <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #2196f3; display: flex; align-items: center; gap: 8px;">
+            <span>💡</span>
+            评价小贴士
+        </h4>
+        <div style="font-size: 13px; color: #666; line-height: 1.5;">
+            <p style="margin: 0 0 8px 0;">✅ <strong>客观公正：</strong>根据实际体验给出评价，帮助其他用户参考</p>
+            <p style="margin: 0 0 8px 0;">✅ <strong>具体详细：</strong>描述具体细节，如配送时间、服务态度、沟通情况等</p>
+            <p style="margin: 0;">✅ <strong>文明用语：</strong>请使用文明礼貌的语言，共建良好社区氛围</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div style="max-width: 800px; margin: 0 auto;">
+        <!-- 顶部标题 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+            <h2 style="font-size: 20px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">📋</span>
+                我的订单
+            </h2>
+        </div>
+        
+        <!-- 订单类型切换 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 0; box-shadow: var(--shadow-md); margin-bottom: 24px;">
+            <div style="display: flex; border-bottom: 1px solid var(--border-color);">
+                <a href="{{ url_for('my_orders', type='all') }}" style="flex: 1; padding: 16px; text-align: center; text-decoration: none; color: var(--text-color); font-size: 14px; font-weight: 500; border-bottom: 3px solid {{ 'var(--accent-color)' if order_type == 'all' else 'transparent' }};">
+                    全部订单
+                </a>
+                <a href="{{ url_for('my_orders', type='second_hand') }}" style="flex: 1; padding: 16px; text-align: center; text-decoration: none; color: var(--text-color); font-size: 14px; font-weight: 500; border-bottom: 3px solid {{ 'var(--accent-color)' if order_type == 'second_hand' else 'transparent' }};">
+                    二手订单
+                </a>
+                <a href="{{ url_for('my_orders', type='runner') }}" style="flex: 1; padding: 16px; text-align: center; text-decoration: none; color: var(--text-color); font-size: 14px; font-weight: 500; border-bottom: 3px solid {{ 'var(--accent-color)' if order_type == 'runner' else 'transparent' }};">
+                    跑腿订单
+                </a>
+            </div>
+        </div>
+        
+        <!-- 订单列表 -->
+        <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 24px; box-shadow: var(--shadow-md);">
+            {% if orders %}
+                <div class="space-y-4">
+                    {% for order in orders %}
+                        <div style="padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); transition: all 0.3s ease; background-color: rgba(0,0,0,0.02);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                <div>
+                                    <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 8px;">
+                                        <a href="{{ url_for('post', post_id=order.id) if order.id else url_for('runner_orders') }}" style="text-decoration: none; color: var(--text-color);">
+                                            {{ order.title }}
+                                        </a>
+                                    </h3>
+                                    <div style="display: flex; gap: 12px; font-size: 12px; color: var(--secondary-color);">
+                                        <span>{{ order.date_posted.strftime('%Y-%m-%d %H:%M') }}</span>
+                                        <span>
+                                            {{ '二手交易' if order.post_type == 'second_hand' else '跑腿服务' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;">
+                                    {% if order.status in ['active', 'pending', 'paid', 'shipped', 'delivered'] %}
+                                    <span style="background-color: rgba(76,175,80,0.1); color: var(--success-color);">
+                                        {{ order.status_label if order.status_label else '进行中' }}
+                                    </span>
+                                    {% elif order.status == 'sold' %}
+                                    <span style="background-color: rgba(0,123,255,0.1); color: var(--accent-color);">
+                                        已完成
+                                    </span>
+                                    {% elif order.status == 'resolved' %}
+                                    <span style="background-color: rgba(0,123,255,0.1); color: var(--accent-color);">
+                                        已解决
+                                    </span>
+                                    {% elif order.status == 'closed' %}
+                                    <span style="background-color: rgba(108,117,125,0.1); color: var(--secondary-color);">
+                                        已关闭
+                                    </span>
+                                    {% else %}
+                                    <span style="background-color: rgba(108,117,125,0.1); color: var(--secondary-color);">
+                                        {{ order.status_label if order.status_label else order.status }}
+                                    </span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <!-- 订单详情 -->
+                            <div style="margin-bottom: 16px;">
+                                <p style="font-size: 14px; color: var(--text-color); line-height: 1.6;">
+                                    {{ order.content[:100] }}{% if order.content|length > 100 %}...{% endif %}
+                                </p>
+                            </div>
+                            
+                            <!-- 订单信息 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <div style="display: flex; gap: 16px;">
+                                    {% if order.price %}
+                                    <span style="font-size: 14px; font-weight: 500; color: var(--danger-color);">
+                                        ¥{{ order.price }}
+                                    </span>
+                                    {% endif %}
+                                    {% if order.location %}
+                                    <span style="font-size: 12px; color: var(--secondary-color);">
+                                        📍 {{ order.location[:20] }}{% if order.location|length > 20 %}...{% endif %}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{{ url_for('post', post_id=order.id) if order.id else url_for('runner_orders') }}" class="btn btn-accent" style="font-size: 12px; padding: 6px 12px;">
+                                        查看详情
+                                    </a>
+                                    {% if order.status == 'active' and order.id %}
+                                    <form action="{{ url_for('update_post_status', post_id=order.id, status='closed') }}" method="POST" style="margin: 0;">
+                                        <button type="submit" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
+                                            取消订单
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 48px 24px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+                    <p style="font-size: 16px; color: var(--secondary-color); margin-bottom: 8px;">
+                        暂无订单
+                    </p>
+                    <p style="font-size: 14px; color: var(--secondary-color); margin-bottom: 24px;">
+                        去发布新的订单吧
+                    </p>
+                    <a href="{{ url_for('services') }}" class="btn btn-accent" style="font-size: 14px; padding: 10px 20px;">
+                        去发布
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

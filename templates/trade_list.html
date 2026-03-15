@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- 顶部搜索栏 -->
+    <div class="mb-4" style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md);">
+        <form method="GET" action="{{ url_for('trade') }}" style="margin: 0;">
+            <div class="search-form" style="display: flex; gap: 0; border-radius: 24px; overflow: hidden; background-color: rgba(0,0,0,0.05);">
+                <input type="text" name="search" placeholder="搜索二手商品" value="{{ search_query or '' }}" style="flex: 1; border: none; background-color: transparent; padding: 12px 20px; font-size: 14px;">
+                <button type="submit" style="border: none; background-color: var(--accent-color); color: white; padding: 0 24px; font-size: 14px; font-weight: 600;">搜索</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 二手交易专区 -->
+    <div style="background-color: var(--card-color); border-radius: var(--border-radius); padding: 16px; box-shadow: var(--shadow-md); margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin: 0;">二手交易专区</h3>
+            <a href="{{ url_for('new_post', type='second_hand') }}" class="btn btn-accent" style="font-size: 12px; padding: 6px 16px;">
+                发布二手
+            </a>
+        </div>
+        
+        <!-- 筛选选项 -->
+        <form method="GET" action="{{ url_for('trade') }}" id="filter-form" style="margin: 0;">
+            {% if search_query %}
+                <input type="hidden" name="search" value="{{ search_query }}">
+            {% endif %}
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                <select name="category" onchange="document.getElementById('filter-form').submit()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+                    <option value="">全部分类</option>
+                    <option value="electronics" {% if category == 'electronics' %}selected{% endif %}>电子产品</option>
+                    <option value="books" {% if category == 'books' %}selected{% endif %}>教材书籍</option>
+                    <option value="daily" {% if category == 'daily' %}selected{% endif %}>生活用品</option>
+                    <option value="clothes" {% if category == 'clothes' %}selected{% endif %}>服饰鞋包</option>
+                    <option value="other" {% if category == 'other' %}selected{% endif %}>其他</option>
+                </select>
+                <select name="sort" onchange="document.getElementById('filter-form').submit()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+                    <option value="latest" {% if sort_by == 'latest' %}selected{% endif %}>最新发布</option>
+                    <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>价格从低到高</option>
+                    <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>价格从高到低</option>
+                    <option value="nearest" {% if sort_by == 'nearest' %}selected{% endif %}>离我最近</option>
+                </select>
+                <input type="text" name="condition" value="{{ condition or '' }}" placeholder="按成色筛选，如9成新" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+                <input type="text" name="my_location" value="{{ my_location or '' }}" placeholder="我的位置（最近排序）" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 12px;">
+            </div>
+        </form>
+        
+        <!-- 商品卡片 -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+            {% for post in posts %}
+                <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
+                    {% set meta = second_hand_meta(post) %}
+                    {% set cover = (post_images(post)[0] if post_images(post) else '') %}
+                    <div style="height: 120px; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 32px; overflow: hidden;">
+                        {% if cover %}
+                        <img src="{{ url_for('static', filename=cover) }}" alt="{{ post.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        🛍️
+                        {% endif %}
+                    </div>
+                    <div style="padding: 12px;">
+                        <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 8px;">
+                            {{ post.title }}
+                        </h4>
+                        <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 6px;">
+                            {{ meta.condition_label }} · {{ meta.trade_method_label }} · 信用分 {{ post.author.level * 20 }}
+                        </p>
+                        <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                            {{ post.content[:40] }}{% if post.content|length > 40 %}...{% endif %}
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 16px; font-weight: 600; color: var(--danger-color);">
+                                ¥{{ post.price }}
+                            </span>
+                            <a href="{{ url_for('post', post_id=post.id) }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                查看
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                {% for i in range(4) %}
+                    <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
+                        <div style="height: 120px; background-color: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                            {% if i == 0 %}💻{% elif i == 1 %}📱{% elif i == 2 %}📚{% else %}👕{% endif %}
+                        </div>
+                        <div style="padding: 12px;">
+                            <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 8px;">
+                                {% if i == 0 %}二手笔记本电脑{% elif i == 1 %}iPhone 13{% elif i == 2 %}考研复习资料{% else %}运动服套装{% endif %}
+                            </h4>
+                            <p style="font-size: 12px; color: var(--secondary-color); margin: 0 0 8px;">
+                                {% if i == 0 %}9成新，无划痕{% elif i == 1 %}8成新，配件齐全{% elif i == 2 %}全新，未拆封{% else %}7成新，轻微磨损{% endif %}
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 16px; font-weight: 600; color: var(--danger-color);">
+                                    ¥{% if i == 0 %}2999{% elif i == 1 %}3999{% elif i == 2 %}299{% else %}199{% endif %}
+                                </span>
+                                <a href="{{ url_for('trade') }}" class="btn btn-accent" style="font-size: 12px; padding: 4px 12px;">
+                                    查看
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        
+        <!-- 校内交易提示 -->
+        <div style="background: linear-gradient(135deg, #e6f7ff 0%, #f0fdff 100%); border: 1px solid #91d5ff; border-radius: 12px; padding: 20px; margin-top: 24px;">
+            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                <div style="font-size: 32px; color: #1890ff;">🏫</div>
+                <div style="flex: 1;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1890ff;">校内交易小贴士</h4>
+                    <div style="font-size: 14px; color: #666; line-height: 1.5;">
+                        <p style="margin: 0 0 8px 0;">✅ <strong>面对面交易更安全：</strong>建议在图书馆、食堂、宿舍楼等公共场所交易</p>
+                        <p style="margin: 0 0 8px 0;">✅ <strong>现金支付更方便：</strong>校内交易可使用现金，避免线上支付手续费</p>
+                        <p style="margin: 0 0 8px 0;">✅ <strong>验货后再确认：</strong>线下见面时仔细检查商品，满意后再付款</p>
+                        <p style="margin: 0;">✅ <strong>保护个人信息：</strong>交易时注意保护个人隐私和安全</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分页控件 -->
+    {% if pagination and pagination.pages > 1 %}
+    <div style="margin-top: 24px; text-align: center;">
+        <nav style="display: inline-flex; gap: 8px; align-items: center;">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('trade', search=search_query, category=category, sort=sort_by, condition=condition, my_location=my_location, page=pagination.prev_num) }}" 
+               style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color); background-color: var(--card-color);">
+                上一页
+            </a>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <span style="padding: 8px 16px; border: 1px solid var(--accent-color); border-radius: 8px; background-color: var(--accent-color); color: white;">
+                        {{ page_num }}
+                    </span>
+                    {% else %}
+                    <a href="{{ url_for('trade', search=search_query, category=category, sort=sort_by, condition=condition, my_location=my_location, page=page_num) }}" 
+                       style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color); background-color: var(--card-color);">
+                        {{ page_num }}
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <span style="padding: 8px;">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if pagination.has_next %}
+            <a href="{{ url_for('trade', search=search_query, category=category, sort=sort_by, condition=condition, my_location=my_location, page=pagination.next_num) }}" 
+               style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: var(--text-color); background-color: var(--card-color);">
+                下一页
+            </a>
+            {% endif %}
+        </nav>
+        <p style="margin-top: 12px; font-size: 12px; color: var(--secondary-color);">
+            共 {{ pagination.total }} 条，第 {{ pagination.page }} / {{ pagination.pages }} 页
+        </p>
+    </div>
+    {% endif %}
+{% endblock %}

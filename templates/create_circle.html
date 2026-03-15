@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="post">
+    <h2>创建新圈子</h2>
+    
+    <form method="POST" style="margin-top: 16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div style="margin-bottom: 16px;">
+            <label for="name" style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-color);">
+                圈子名称 <span style="color: var(--danger-color);">*</span>
+            </label>
+            <input type="text" id="name" name="name" required placeholder="请输入圈子名称" 
+                   style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); 
+                          font-size: 14px; color: var(--text-color); background-color: var(--card-color);">
+            <p style="font-size: 12px; color: var(--secondary-color); margin-top: 4px;">
+                圈子名称不能超过100个字符，且不能与现有圈子重名
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 16px;">
+            <label for="icon" style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-color);">
+                圈子图标
+            </label>
+            <input type="text" id="icon" name="icon" maxlength="2" value="🌟" placeholder="例如：🎮"
+                   style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); 
+                          font-size: 14px; color: var(--text-color); background-color: var(--card-color);">
+            <p style="font-size: 12px; color: var(--secondary-color); margin-top: 4px;">
+                支持输入一个 Emoji 作为圈子图标
+            </p>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label for="description" style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-color);">
+                圈子描述
+            </label>
+            <textarea id="description" name="description" rows="4" placeholder="请描述这个圈子的主题和规则..." 
+                      style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); 
+                             font-size: 14px; color: var(--text-color); background-color: var(--card-color); resize: vertical;"></textarea>
+            <p style="font-size: 12px; color: var(--secondary-color); margin-top: 4px;">
+                描述不能超过500个字符，建议简要说明圈子的主题和规则
+            </p>
+        </div>
+        
+        <div style="margin-bottom: 24px;">
+            <label for="circle_type" style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-color);">
+                圈子类型
+            </label>
+            <select id="circle_type" name="type" 
+                    style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); 
+                           font-size: 14px; color: var(--text-color); background-color: var(--card-color);">
+                <option value="interest">兴趣交流</option>
+                <option value="study">学习讨论</option>
+                <option value="entertainment">娱乐休闲</option>
+                <option value="campus">校园生活</option>
+                <option value="other">其他</option>
+            </select>
+            <p style="font-size: 12px; color: var(--secondary-color); margin-top: 4px;">
+                选择合适的圈子类型有助于吸引更多相关用户
+            </p>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-color);">
+                <input type="checkbox" name="is_public" checked>
+                公开圈子（未勾选为私密圈子）
+            </label>
+        </div>
+        
+        <div style="display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-success" style="flex: 1; padding: 12px;">
+                创建圈子
+            </button>
+            <a href="{{ url_for('forum') }}" class="btn btn-secondary" style="flex: 1; padding: 12px; text-align: center;">
+                返回论坛
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success {
+        background-color: var(--accent-color);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background-color: #f57c00;
+    }
+    
+    .btn-secondary {
+        background-color: rgba(0,0,0,0.05);
+        color: var(--text-color);
+    }
+    
+    .btn-secondary:hover {
+        background-color: rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

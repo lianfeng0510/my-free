@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="post">
+    <h2>私信</h2>
+    
+    {% if conversations %}
+    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+        {% for conv in conversations %}
+        <a href="{{ url_for('conversation', user_id=conv.other_user.id) }}" 
+           style="display: flex; align-items: center; gap: 16px; padding: 16px; 
+                  background-color: var(--card-color); border-radius: var(--border-radius); 
+                  box-shadow: var(--shadow-sm); text-decoration: none; color: var(--text-color);
+                  border-left: 4px solid {% if conv.unread_count > 0 %}var(--accent-color){% else %}transparent{% endif %};
+                  transition: all 0.3s ease;">
+            <div style="position: relative;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background-color: #f0f0f0;">
+                    <img src="{{ resolve_avatar_url(conv.other_user) }}" 
+                         alt="{{ conv.other_user.username }}" 
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% if conv.unread_count > 0 %}
+                <div style="position: absolute; top: -4px; right: -4px; width: 24px; height: 24px; 
+                            background-color: var(--accent-color); color: white; border-radius: 50%; 
+                            display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                    {{ conv.unread_count }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                    <div style="font-weight: 600; font-size: 16px; {% if conv.unread_count > 0 %}color: var(--accent-color){% endif %}">
+                        {{ conv.other_user.username }}
+                    </div>
+                    <div style="font-size: 12px; color: var(--secondary-color);">
+                        {{ conv.last_message.sent_at.strftime('%m-%d %H:%M') }}
+                    </div>
+                </div>
+                
+                <div style="font-size: 14px; color: var(--text-color); line-height: 1.4; 
+                            {% if conv.last_message.sender_id == current_user.id %}opacity: 0.7;{% endif %}">
+                    {% if conv.last_message.sender_id == current_user.id %}
+                    我: {{ conv.last_message.content[:50] }}{% if conv.last_message.content|length > 50 %}...{% endif %}
+                    {% else %}
+                    {{ conv.other_user.username }}: {{ conv.last_message.content[:50] }}{% if conv.last_message.content|length > 50 %}...{% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="margin-top: 40px; text-align: center; padding: 40px 20px;">
+        <div style="font-size: 48px; color: var(--secondary-color); margin-bottom: 16px;">💬</div>
+        <h3 style="color: var(--text-color); margin-bottom: 12px;">暂无私信</h3>
+        <p style="color: var(--secondary-color); margin-bottom: 24px;">
+            您还没有收到或发送过私信<br>
+            点击其他用户的头像可以开始聊天
+        </p>
+        <a href="{{ url_for('forum') }}" class="btn btn-primary" 
+           style="display: inline-block; padding: 10px 20px; background-color: var(--accent-color); 
+                  color: white; border-radius: var(--border-radius); text-decoration: none;">
+            去论坛看看
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .btn-primary {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: var(--border-radius);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: #f57c00;
+    }
+</style>
+{% endblock %}
